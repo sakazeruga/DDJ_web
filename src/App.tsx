@@ -289,6 +289,14 @@ export function App() {
   // Hosted tours (e.g., custom created tours)
   const myHostedTours = tours.filter((t) => t.id.startsWith('tour-custom-'));
 
+  // Smooth scroll helper to tours section
+  const scrollToExplore = () => {
+    const el = document.getElementById('explore-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const t = translations[lang];
 
   return (
@@ -296,7 +304,12 @@ export function App() {
       {/* Navbar */}
       <Navbar
         currentTab={currentTab}
-        setCurrentTab={setCurrentTab}
+        setCurrentTab={(tab) => {
+          setCurrentTab(tab);
+          if (tab === 'explore') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }}
         openCreateModal={() => setIsCreateModalOpen(true)}
         lang={lang}
         setLang={setLang}
@@ -316,16 +329,20 @@ export function App() {
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              onSearch={() => {}}
+              setSelectedCategory={(cat) => {
+                setSelectedCategory(cat);
+                scrollToExplore();
+              }}
+              onSearch={scrollToExplore}
               openCreateModal={() => setIsCreateModalOpen(true)}
               onTagClick={(tag) => {
                 setSearchQuery(tag.replace('#', ''));
+                scrollToExplore();
               }}
             />
 
             {/* Tours Exploration Area */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div id="explore-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 scroll-mt-20">
               {/* Category Filter Pills */}
               <CategoryFilter
                 selectedCategory={selectedCategory}

@@ -1,11 +1,11 @@
-import React from 'react';
 import { 
   Clock, 
   MapPin, 
   Star, 
   Heart, 
   Flame, 
-  Languages
+  Languages,
+  ChevronRight
 } from 'lucide-react';
 import type { Tour, Language } from '../types';
 import { translations } from '../i18n/translations';
@@ -175,6 +175,14 @@ export const TourCard: React.FC<TourCardProps> = ({
             <div className="text-base sm:text-lg font-black text-white">
               <span className="text-cyan-400">¥{tour.price.toLocaleString()}</span>
             </div>
+          </div>
+        </div>
+
+        {/* Action Button CTA */}
+        <div className="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-xs font-bold text-slate-300 group-hover:text-cyan-400 transition-colors">
+          <span>{t.tourCard.viewDetails}</span>
+          <div className="w-6 h-6 rounded-full bg-slate-800 group-hover:bg-cyan-500/20 group-hover:text-cyan-300 flex items-center justify-center transition-colors">
+            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </div>
       </div>

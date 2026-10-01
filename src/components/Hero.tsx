@@ -73,10 +73,7 @@ export const Hero: React.FC<HeroProps> = ({
         {/* Hero Quick Action Buttons */}
         <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
           <button
-            onClick={() => {
-              const element = document.getElementById('explore-anchor');
-              element?.scrollIntoView({ behavior: 'smooth' });
-            }}
+            onClick={onSearch}
             className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
           >
             {t.hero.exploreBtn}
@@ -107,8 +104,17 @@ export const Hero: React.FC<HeroProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t.searchPlaceholder}
-                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all"
+                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-11 pr-10 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs bg-slate-800 rounded-full w-5 h-5 flex items-center justify-center cursor-pointer"
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
             {/* Category Quick Select */}
