@@ -30,49 +30,48 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   const [title, setTitle] = useState('');
   const [catchphrase, setCatchphrase] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<TourCategory>('pilgrimage');
+  const [category, setCategory] = useState<TourCategory>('history-castle');
   const [area, setArea] = useState('');
   const [otakuLevel, setOtakuLevel] = useState<1 | 2 | 3 | 4 | 5>(3);
-  const [durationHours, setDurationHours] = useState<number>(3.0);
-  const [price, setPrice] = useState<number>(6000);
-  const [maxParticipants, setMaxParticipants] = useState<number>(4);
+  const [durationHours, setDurationHours] = useState<number>(3.5);
+  const [price, setPrice] = useState<number>(6500);
+  const [maxParticipants, setMaxParticipants] = useState<number>(6);
   const [languagesInput, setLanguagesInput] = useState<string>('日本語, English');
   const [imageUrl, setImageUrl] = useState<string>(
-    'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80'
+    'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80'
   );
   const [recommendedPrep, setRecommendedPrep] = useState('');
-  const [mustBringInput, setMustBringInput] = useState('歩きやすい靴, スマホ');
+  const [mustBringInput, setMustBringInput] = useState('歩きやすい靴, カメラ');
   const [meetingPoint, setMeetingPoint] = useState('');
-  const [guideName, setGuideName] = useState('案内人');
-  const [guideBio, setGuideBio] = useState('このジャンルのオタク歴10年です！');
+  const [guideName, setGuideName] = useState('ガイド');
+  const [guideBio, setGuideBio] = useState('この歴史と街並みが大好きで10年通っています！');
   const [guideYears, setGuideYears] = useState<number>(10);
 
   // Dynamic itinerary stops
   const [itinerary, setItinerary] = useState<ItineraryItem[]>([
     {
-      time: '13:00',
+      time: '10:00',
       spotTitle: '集合場所にて合流＆ブリーフィング',
       spotTitleEn: 'Meeting & Briefing',
-      description: '当日のルート説明と参加者の推しヒアリングを行います。',
+      description: '当日のルート説明と参加者の興味のあるポイントをヒアリング。',
       descriptionEn: 'Orientation and tailored route overview.',
       isDeepSpot: false,
     },
     {
-      time: '14:00',
-      spotTitle: '第1の聖地スポット・ディープ探訪',
-      spotTitleEn: 'First Sacred Spot Deep Exploration',
-      description: 'アニメのカットと同じアングルで写真撮影や作品の裏話解説。',
-      descriptionEn: 'Exact frame matching and insider trivia.',
+      time: '11:00',
+      spotTitle: '第1の歴史スポット・現地遺構探訪',
+      spotTitleEn: 'First Historical Spot Deep Exploration',
+      description: '一般の観光客が気づかない遺構やアングルの徹底解説。',
+      descriptionEn: 'Deep architectural and historical lore.',
       isDeepSpot: true,
     },
   ]);
 
-  // Handle itinerary additions
   const addItineraryStop = () => {
     setItinerary([
       ...itinerary,
       {
-        time: '15:00',
+        time: '13:00',
         spotTitle: '',
         spotTitleEn: '',
         description: '',
@@ -93,13 +92,12 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
     setItinerary(updated);
   };
 
-  // Preset image helpers
   const presetImages = [
-    { label: '秋葉原/サイバー', url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1200&q=80' },
-    { label: 'ライブハウス/音楽', url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80' },
-    { label: 'レトロ玩具/フィギュア', url: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=1200&q=80' },
-    { label: 'ゲーセン/ネオン', url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80' },
-    { label: '富士山/地方聖地', url: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80' },
+    { label: '城郭・歴史', url: 'https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=1200&q=80' },
+    { label: '京都・寺社', url: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80' },
+    { label: '鉄道・自然', url: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80' },
+    { label: '古書・喫茶', url: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1200&q=80' },
+    { label: 'アニメ聖地', url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80' },
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -133,8 +131,8 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
         name: guideName,
         nameEn: guideName,
         avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80',
-        role: 'オタクツアープランナー',
-        roleEn: 'Otaku Tour Planner',
+        role: 'カルチャーツアーガイド',
+        roleEn: 'Cultural Tour Specialist',
         bio: guideBio,
         bioEn: guideBio,
         rating: 5.0,
@@ -143,15 +141,15 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
         specialties: [category, area],
       },
       itinerary,
-      included: ['ガイド料', '特製オリジナルマップ'],
-      includedEn: ['Guide Fee', 'Custom Map'],
+      included: ['専門ガイド料', '特製探訪マップ'],
+      includedEn: ['Specialist Guide Fee', 'Custom Route Map'],
       mustBring: mustBringInput.split(',').map((s) => s.trim()).filter(Boolean),
       mustBringEn: mustBringInput.split(',').map((s) => s.trim()).filter(Boolean),
-      recommendedPreparation: recommendedPrep || '好きなアニメへの情熱',
-      recommendedPreparationEn: recommendedPrep || 'Passion for anime',
+      recommendedPreparation: recommendedPrep || 'テーマへの知的好奇心',
+      recommendedPreparationEn: recommendedPrep || 'Curiosity for culture and history',
       meetingPoint,
       meetingPointEn: meetingPoint,
-      tags: [area, category, '新作ツアー'],
+      tags: [area, '新作ツアー'],
       featured: false,
       rating: 5.0,
       reviewsCount: 0,
@@ -164,46 +162,46 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
       particleCount: 100,
       spread: 90,
       origin: { y: 0.5 },
-      colors: ['#a855f7', '#06b6d4', '#ec4899'],
+      colors: ['#2563eb', '#f43f5e', '#eab308'],
     });
 
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
-        {/* Sticky Header */}
-        <div className="sticky top-0 z-20 bg-slate-950/90 backdrop-blur-md px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-4xl bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+        {/* Header */}
+        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-pink-400" />
+            <Sparkles className="w-5 h-5 text-blue-600" />
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-white leading-tight">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
                 {t.createModal.title}
               </h2>
-              <p className="text-xs text-slate-400">{t.createModal.subtitle}</p>
+              <p className="text-xs text-slate-500">{t.createModal.subtitle}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800"
+            className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-200 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Scrollable Form Body */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 bg-slate-50">
           {/* Section 1: Basic Info */}
-          <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-4">
-            <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-blue-700 uppercase tracking-wider flex items-center gap-1.5">
               <span>01.</span> {t.createModal.step1}
             </h3>
 
             {/* Title */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                {t.createModal.tourTitle} <span className="text-pink-400">*</span>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                {t.createModal.tourTitle} <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -211,14 +209,14 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
               />
             </div>
 
             {/* Catchphrase */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                {t.createModal.catchphrase} <span className="text-pink-400">*</span>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                {t.createModal.catchphrase} <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -226,36 +224,35 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                 value={catchphrase}
                 onChange={(e) => setCatchphrase(e.target.value)}
                 required
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Category */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
                   {t.createModal.category}
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as TourCategory)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
                 >
-                  <option value="pilgrimage">{t.categories.pilgrimage}</option>
-                  <option value="akiba-deep">{t.categories['akiba-deep']}</option>
-                  <option value="nakano-vintage">{t.categories['nakano-vintage']}</option>
-                  <option value="retro-games">{t.categories['retro-games']}</option>
-                  <option value="otome-road">{t.categories['otome-road']}</option>
-                  <option value="maid-subculture">{t.categories['maid-subculture']}</option>
-                  <option value="comiket-doujin">{t.categories['comiket-doujin']}</option>
+                  <option value="history-castle">{t.categories['history-castle']}</option>
+                  <option value="railway-train">{t.categories['railway-train']}</option>
+                  <option value="anime-pilgrimage">{t.categories['anime-pilgrimage']}</option>
+                  <option value="retro-showa">{t.categories['retro-showa']}</option>
+                  <option value="folklore-yokai">{t.categories['folklore-yokai']}</option>
+                  <option value="oshikatsu-subculture">{t.categories['oshikatsu-subculture']}</option>
                   <option value="custom">{t.categories.custom}</option>
                 </select>
               </div>
 
               {/* Area */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  {t.createModal.area} <span className="text-pink-400">*</span>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  {t.createModal.area} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -263,20 +260,20 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                   value={area}
                   onChange={(e) => setArea(e.target.value)}
                   required
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder-slate-400"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
                 />
               </div>
             </div>
 
-            {/* Otaku Level Slider */}
+            {/* Depth Level Slider */}
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1">
-                  <Flame className="w-3.5 h-3.5 text-pink-400" />
+                <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                  <Flame className="w-3.5 h-3.5 text-rose-500" />
                   <span>{t.createModal.otakuLevel}</span>
                 </label>
-                <span className="text-xs font-bold text-pink-400">
-                  Lv.{otakuLevel} {otakuLevel === 5 ? '（超限界オタク・沼）' : otakuLevel === 1 ? '（ビギナー歓迎）' : ''}
+                <span className="text-xs font-bold text-blue-700">
+                  Lv.{otakuLevel} {otakuLevel === 5 ? '（極限の沼・専門家）' : otakuLevel === 1 ? '（入門・初心者歓迎）' : ''}
                 </span>
               </div>
               <input
@@ -286,14 +283,14 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                 step="1"
                 value={otakuLevel}
                 onChange={(e) => setOtakuLevel(Number(e.target.value) as any)}
-                className="w-full accent-pink-500 cursor-pointer"
+                className="w-full accent-blue-600 cursor-pointer"
               />
             </div>
 
             {/* Numbers: Price, Duration, Max Guests */}
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
                   {t.createModal.price}
                 </label>
                 <input
@@ -302,12 +299,12 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                   onChange={(e) => setPrice(Number(e.target.value))}
                   step="500"
                   min="0"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
                   {t.createModal.duration}
                 </label>
                 <input
@@ -316,12 +313,12 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                   onChange={(e) => setDurationHours(Number(e.target.value))}
                   step="0.5"
                   min="1"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
                   {t.createModal.maxGuests}
                 </label>
                 <input
@@ -330,44 +327,44 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                   onChange={(e) => setMaxParticipants(Number(e.target.value))}
                   min="1"
                   max="20"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
                 />
               </div>
             </div>
 
             {/* Languages Input */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1">
                 対応言語（カンマ区切り）
               </label>
               <input
                 type="text"
                 value={languagesInput}
                 onChange={(e) => setLanguagesInput(e.target.value)}
-                placeholder="例: 日本語, English, 中文"
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400"
+                placeholder="例: 日本語, English"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400"
               />
             </div>
 
             {/* Image Selection */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1">
                 {t.createModal.imageUrl}
               </label>
               <input
                 type="text"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white mb-2"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 mb-2"
               />
-              <div className="flex flex-wrap gap-2 text-[11px] text-slate-400">
+              <div className="flex flex-wrap gap-2 text-[11px] text-slate-500">
                 <span>プリセット画像:</span>
                 {presetImages.map((p, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => setImageUrl(p.url)}
-                    className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300"
+                    className="px-2.5 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 cursor-pointer"
                   >
                     {p.label}
                   </button>
@@ -377,30 +374,30 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
 
             {/* Description */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                {t.createModal.description} <span className="text-pink-400">*</span>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                {t.createModal.description} <span className="text-rose-500">*</span>
               </label>
               <textarea
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
-                placeholder="このツアーで巡る場所のディープな魅力、なぜあなたが案内できるのかを熱く語ってください！"
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs sm:text-sm text-white placeholder-slate-400"
+                placeholder="このテーマの魅力、なぜあなたが案内できるのかを情熱を込めて語ってください！"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400"
               />
             </div>
           </div>
 
           {/* Section 2: Itinerary Timeline */}
-          <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-4">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
+              <h3 className="text-sm font-bold text-indigo-700 uppercase tracking-wider flex items-center gap-1.5">
                 <span>02.</span> {t.createModal.step2}
               </h3>
               <button
                 type="button"
                 onClick={addItineraryStop}
-                className="flex items-center gap-1 text-xs font-bold text-cyan-400 hover:text-cyan-300 px-3 py-1.5 rounded-lg bg-cyan-950/40 border border-cyan-500/30 cursor-pointer"
+                className="flex items-center gap-1 text-xs font-bold text-blue-700 hover:text-blue-800 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>{t.createModal.addSpot}</span>
@@ -409,15 +406,15 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
 
             <div className="space-y-3">
               {itinerary.map((stop, index) => (
-                <div key={index} className="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
+                <div key={index} className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 flex-1">
                       <input
                         type="text"
-                        placeholder="時間 (例: 13:30)"
+                        placeholder="時間 (例: 10:30)"
                         value={stop.time}
                         onChange={(e) => updateItineraryStop(index, 'time', e.target.value)}
-                        className="w-24 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                        className="w-24 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-900"
                       />
                       <input
                         type="text"
@@ -428,25 +425,25 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                           updateItineraryStop(index, 'spotTitleEn', e.target.value);
                         }}
                         required
-                        className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                        className="flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-900"
                       />
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <label className="flex items-center gap-1 text-[11px] text-pink-300 cursor-pointer">
+                      <label className="flex items-center gap-1 text-[11px] text-rose-600 font-bold cursor-pointer">
                         <input
                           type="checkbox"
                           checked={stop.isDeepSpot}
                           onChange={(e) => updateItineraryStop(index, 'isDeepSpot', e.target.checked)}
-                          className="accent-pink-500"
+                          className="accent-rose-600"
                         />
-                        <span>ディープ</span>
+                        <span>見どころ</span>
                       </label>
                       {itinerary.length > 1 && (
                         <button
                           type="button"
                           onClick={() => removeItineraryStop(index)}
-                          className="p-1.5 text-slate-500 hover:text-rose-400 cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -456,13 +453,13 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
 
                   <textarea
                     rows={2}
-                    placeholder="見どころやオタク解説、おすすめのアングルなど"
+                    placeholder="見どころやガイド解説、撮影アングルなど"
                     value={stop.description}
                     onChange={(e) => {
                       updateItineraryStop(index, 'description', e.target.value);
                       updateItineraryStop(index, 'descriptionEn', e.target.value);
                     }}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white placeholder-slate-500"
+                    className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs text-slate-900 placeholder-slate-400"
                   />
                 </div>
               ))}
@@ -470,15 +467,15 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
           </div>
 
           {/* Section 3: Prep & Guide */}
-          <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-4">
-            <h3 className="text-sm font-bold text-pink-400 uppercase tracking-wider flex items-center gap-1.5">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-1.5">
               <span>03.</span> {t.createModal.step3}
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  {t.createModal.meetingPoint} <span className="text-pink-400">*</span>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  {t.createModal.meetingPoint} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -486,63 +483,63 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                   value={meetingPoint}
                   onChange={(e) => setMeetingPoint(e.target.value)}
                   required
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
                   {t.createModal.prepAnime}
                 </label>
                 <input
                   type="text"
-                  placeholder="例: 『ぼっち・ざ・ろっく！』1〜8話まで"
+                  placeholder="例: 戦国武将の合戦図や関連作品"
                   value={recommendedPrep}
                   onChange={(e) => setRecommendedPrep(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1">
                 {t.createModal.mustBringItems}
               </label>
               <input
                 type="text"
                 value={mustBringInput}
                 onChange={(e) => setMustBringInput(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400"
               />
             </div>
 
             {/* Guide Info */}
-            <div className="pt-3 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">ガイド名</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">ガイド名</label>
                 <input
                   type="text"
                   value={guideName}
                   onChange={(e) => setGuideName(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">オタク歴（年）</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">愛好歴（年）</label>
                 <input
                   type="number"
                   value={guideYears}
                   onChange={(e) => setGuideYears(Number(e.target.value))}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">自己PR</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">自己PR</label>
                 <input
                   type="text"
                   value={guideBio}
                   onChange={(e) => setGuideBio(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
                 />
               </div>
             </div>
@@ -552,9 +549,9 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-base shadow-xl shadow-purple-600/30 hover:shadow-purple-600/50 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-base shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
-              <Sparkles className="w-5 h-5" />
+              <Sparkles className="w-5 h-5 text-yellow-300" />
               <span>{t.createModal.submit}</span>
             </button>
           </div>

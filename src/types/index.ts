@@ -1,12 +1,11 @@
 export type TourCategory = 
-  | 'pilgrimage'       // 聖地巡礼
-  | 'akiba-deep'        // 秋葉原ディープ
-  | 'nakano-vintage'    // 中野ブロードウェイ・レトロTOY
-  | 'retro-games'       // レトロゲーム・アーケード
-  | 'otome-road'        // 池袋・乙女ロード
-  | 'maid-subculture'   // コンカフェ・メイドカルチャー
-  | 'comiket-doujin'    // 同人誌・即売会攻略
-  | 'custom';           // その他・カスタム
+  | 'anime-pilgrimage'     // アニメ・漫画・聖地巡礼
+  | 'history-castle'        // 歴史・城郭・新選組・刀剣
+  | 'railway-train'         // 鉄道・秘境駅・レトロ車両
+  | 'retro-showa'           // 昭和レトロ・古書店・純喫茶
+  | 'folklore-yokai'        // 妖怪・神話・民俗伝承
+  | 'oshikatsu-subculture'  // 推し活・アイドル・サブカル
+  | 'custom';               // 特注・カスタム
 
 export interface TourGuide {
   id: string;
@@ -19,7 +18,7 @@ export interface TourGuide {
   bioEn: string;
   rating: number;
   reviewsCount: number;
-  otakuYears: number;
+  otakuYears: number; // 愛好歴
   specialties: string[];
 }
 
@@ -43,7 +42,7 @@ export interface Tour {
   category: TourCategory;
   area: string;
   areaEn: string;
-  otakuLevel: 1 | 2 | 3 | 4 | 5; // 1: 初心者歓迎, 3: 中級, 5: 超限界オタク
+  otakuLevel: 1 | 2 | 3 | 4 | 5; // 1: 初心者歓迎, 3: 中級, 5: 極限の沼
   durationHours: number;
   price: number; // JPY
   maxParticipants: number;
@@ -56,7 +55,7 @@ export interface Tour {
   includedEn: string[];
   mustBring: string[];
   mustBringEn: string[];
-  recommendedPreparation: string; // 履修推奨アニメや作品
+  recommendedPreparation: string; // 予習推奨（歴史知識、アニメなど）
   recommendedPreparationEn: string;
   meetingPoint: string;
   meetingPointEn: string;

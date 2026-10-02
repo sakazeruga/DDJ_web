@@ -39,7 +39,7 @@ export function App() {
 
   // Tours state (synced with LocalStorage)
   const [tours, setTours] = useState<Tour[]>(() => {
-    const saved = localStorage.getItem('ddj_tours');
+    const saved = localStorage.getItem('ddj_cultural_tours_v1');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -51,12 +51,12 @@ export function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('ddj_tours', JSON.stringify(tours));
+    localStorage.setItem('ddj_cultural_tours_v1', JSON.stringify(tours));
   }, [tours]);
 
   // Requests state
   const [requests, setRequests] = useState<TourRequest[]>(() => {
-    const saved = localStorage.getItem('ddj_requests');
+    const saved = localStorage.getItem('ddj_cultural_requests_v1');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -68,12 +68,12 @@ export function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('ddj_requests', JSON.stringify(requests));
+    localStorage.setItem('ddj_cultural_requests_v1', JSON.stringify(requests));
   }, [requests]);
 
   // Reviews state
   const [reviews, setReviews] = useState<TourReview[]>(() => {
-    const saved = localStorage.getItem('ddj_reviews');
+    const saved = localStorage.getItem('ddj_cultural_reviews_v1');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -85,12 +85,12 @@ export function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('ddj_reviews', JSON.stringify(reviews));
+    localStorage.setItem('ddj_cultural_reviews_v1', JSON.stringify(reviews));
   }, [reviews]);
 
   // Bookings state
   const [bookings, setBookings] = useState<Booking[]>(() => {
-    const saved = localStorage.getItem('ddj_bookings');
+    const saved = localStorage.getItem('ddj_cultural_bookings_v1');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -102,13 +102,13 @@ export function App() {
       {
         id: 'booking-init-1',
         tourId: 'tour-1',
-        tourTitle: '【秋葉原裏ルート】電子部品ジャンク街・レトロ自販機・老舗同人ディープ探訪',
-        tourImage: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1200&q=80',
-        date: '2026-10-12',
+        tourTitle: '【歴史オタクと行く】京都・幕末新選組の足跡〜壬生寺・八木邸から油小路の変まで完全踏破〜',
+        tourImage: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80',
+        date: '2026-10-18',
         participantsCount: 2,
-        totalPrice: 15000,
-        userName: 'オタク太郎',
-        userEmail: 'otaku@example.com',
+        totalPrice: 13600,
+        userName: '歴史トラベラー',
+        userEmail: 'traveler@example.com',
         status: 'confirmed',
         createdAt: '2026-10-01',
       },
@@ -116,7 +116,7 @@ export function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('ddj_bookings', JSON.stringify(bookings));
+    localStorage.setItem('ddj_cultural_bookings_v1', JSON.stringify(bookings));
   }, [bookings]);
 
   // Favorites state
@@ -305,7 +305,7 @@ export function App() {
   const [viewMode, setViewMode] = useState<'grid' | 'catalog'>('grid');
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-yellow-400 selection:text-black">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* Navbar */}
       <Navbar
         currentTab={currentTab}
@@ -370,28 +370,28 @@ export function App() {
               />
 
               {/* Section Title & View Mode Toggle */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
+              <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full otaku-badge-yellow text-xs font-black mb-2">
-                    <Flame className="w-3.5 h-3.5 text-black fill-black" />
-                    <span>{lang === 'ja' ? '厳選ディープツアー一覧' : 'Featured Deep Tours'}</span>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200 text-xs font-bold mb-2">
+                    <Flame className="w-3.5 h-3.5 text-blue-600 fill-blue-600" />
+                    <span>{lang === 'ja' ? '厳選ディープツアー一覧' : 'Curated Passion Tours'}</span>
                   </div>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white">
-                    {lang === 'ja' ? '今すぐ参加できる聖地・オタクツアー' : 'Available Otaku Tours & Pilgrimages'}
+                  <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+                    {lang === 'ja' ? '今すぐ参加できる日本の偏愛ツアー' : 'Available Cultural Walking Tours'}
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                    {lang === 'ja' ? '＼ 全ツアー・旅のしおり＆巡礼マップ付き！ガイドと少人数で潜行 ／' : 'All tours include itinerary shiori & pilgrimage guide'}
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                    {lang === 'ja' ? '＼ 歴史・鉄道・アニメ聖地・古書・城郭。全コース旅のしおり付き ／' : 'Samurai history, railways, anime holy grounds & vintage books'}
                   </p>
                 </div>
 
-                {/* View Mode Toggle (Grid vs コミケお品書き) */}
-                <div className="flex items-center gap-1 bg-slate-900 p-1.5 rounded-xl border border-slate-800 self-end sm:self-auto text-xs font-bold">
+                {/* View Mode Toggle */}
+                <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-xs self-end sm:self-auto text-xs font-bold">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                       viewMode === 'grid'
-                        ? 'bg-purple-600 text-white shadow'
-                        : 'text-slate-400 hover:text-white'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
                     <LayoutGrid className="w-3.5 h-3.5" />
@@ -399,30 +399,30 @@ export function App() {
                   </button>
                   <button
                     onClick={() => setViewMode('catalog')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                       viewMode === 'catalog'
-                        ? 'bg-yellow-400 text-black shadow font-black'
-                        : 'text-slate-400 hover:text-white'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
                     <List className="w-3.5 h-3.5" />
-                    <span>{lang === 'ja' ? 'お品書き表示' : 'Catalog'}</span>
+                    <span>{lang === 'ja' ? 'リスト表示' : 'List'}</span>
                   </button>
                 </div>
               </div>
 
               {/* Tours Grid or Catalog */}
               {filteredTours.length === 0 ? (
-                <div className="text-center py-20 bg-slate-900/40 rounded-3xl border border-slate-800">
-                  <p className="text-base text-slate-300 font-semibold mb-2">
+                <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-xs">
+                  <p className="text-base text-slate-800 font-bold mb-2">
                     {lang === 'ja' ? '条件に一致するツアーが見つかりませんでした。' : 'No tours match your current filters.'}
                   </p>
-                  <p className="text-xs text-slate-400 mb-6">
+                  <p className="text-xs text-slate-500 mb-6">
                     {lang === 'ja' ? '検索キーワードを変更するか、フィルターをリセットしてください。' : 'Try broadening your search or resetting filters.'}
                   </p>
                   <button
                     onClick={handleResetFilters}
-                    className="px-5 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-xs hover:bg-purple-500 transition-colors"
+                    className="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-500 transition-colors shadow-xs cursor-pointer"
                   >
                     {t.filter.reset}
                   </button>
@@ -441,54 +441,54 @@ export function App() {
                   ))}
                 </div>
               ) : (
-                /* Catalog / お品書き風リスト表示 */
+                /* Catalog / リスト表示 */
                 <div className="space-y-4">
                   {filteredTours.map((tour) => (
                     <div
                       key={tour.id}
                       onClick={() => setSelectedTour(tour)}
-                      className="bg-slate-900 hover:bg-slate-850 rounded-2xl border-2 border-slate-700 hover:border-yellow-400 p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 cursor-pointer otaku-sticker transition-all"
+                      className="bg-white hover:bg-blue-50/20 rounded-2xl border border-slate-200 hover:border-blue-400 p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 cursor-pointer shadow-xs hover:shadow-md transition-all"
                     >
                       <div className="flex items-start sm:items-center gap-4 flex-1">
                         <img
                           src={tour.imageUrl}
                           alt={tour.title}
-                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-slate-800 flex-shrink-0"
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-slate-200 flex-shrink-0"
                         />
                         <div className="space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="otaku-badge-yellow text-[10px] px-2 py-0.5 rounded-full font-black">
-                              Lv.{tour.otakuLevel} 沼度
+                            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold border border-blue-200">
+                              Lv.{tour.otakuLevel} 熱量
                             </span>
-                            <span className="text-xs text-cyan-400 font-bold bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                            <span className="text-xs text-slate-700 font-bold bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">
                               {tour.area}
                             </span>
-                            <span className="text-xs text-slate-400">
+                            <span className="text-xs text-slate-500 font-medium">
                               所要: {tour.durationHours}時間 / 定員 {tour.maxParticipants}名
                             </span>
                           </div>
-                          <h3 className="font-black text-white text-base hover:text-yellow-400 transition-colors">
+                          <h3 className="font-bold text-slate-900 text-base hover:text-blue-600 transition-colors">
                             {lang === 'ja' ? tour.title : tour.titleEn}
                           </h3>
-                          <p className="text-xs text-slate-300 line-clamp-1">
+                          <p className="text-xs text-slate-600 line-clamp-1">
                             {tour.catchphrase}
                           </p>
-                          <div className="text-[11px] text-purple-300">
-                            ガイド: <b>{tour.guide.name}</b> (オタク歴{tour.guide.otakuYears}年)
+                          <div className="text-[11px] text-slate-500">
+                            ガイド: <b className="text-slate-800">{tour.guide.name}</b> (愛好歴{tour.guide.otakuYears}年)
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-slate-800">
+                      <div className="flex md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
                         <div className="text-right">
-                          <div className="text-[10px] text-slate-400">1名あたり</div>
-                          <div className="text-xl font-black text-yellow-400">
-                            ¥{tour.price.toLocaleString()}
+                          <div className="text-[10px] text-slate-400 font-medium">1名あたり</div>
+                          <div className="text-xl font-black text-slate-900">
+                            <span className="text-blue-600">¥{tour.price.toLocaleString()}</span>
                           </div>
                         </div>
                         <button
                           type="button"
-                          className="px-4 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black text-xs shadow transition-all whitespace-nowrap"
+                          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-xs transition-all whitespace-nowrap cursor-pointer"
                         >
                           旅程・予約へ →
                         </button>

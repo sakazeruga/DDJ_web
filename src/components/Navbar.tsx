@@ -25,41 +25,41 @@ export const Navbar: React.FC<NavbarProps> = ({
   const t = translations[lang];
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
         {/* Brand Logo */}
         <div 
           onClick={() => setCurrentTab('explore')}
           className="flex items-center gap-3 cursor-pointer group"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-500 to-cyan-400 p-[2px] shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-rose-500 p-[2px] shadow-sm group-hover:scale-105 transition-transform">
+            <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-blue-600" />
             </div>
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-xl tracking-wider bg-gradient-to-r from-white via-cyan-200 to-purple-400 bg-clip-text text-transparent" style={{ fontFamily: 'Orbitron, sans-serif' }}>
+              <span className="font-extrabold text-xl tracking-wider text-slate-900" style={{ fontFamily: 'Orbitron, sans-serif' }}>
                 DEEP DIVE
               </span>
-              <span className="text-xs px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-semibold border border-purple-500/30">
+              <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-bold border border-blue-200">
                 JAPAN
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 tracking-tight font-medium">
-              {lang === 'ja' ? 'オタク特化型ツアー体験' : 'Otaku Tourism Redefined'}
+            <p className="text-[10px] text-slate-500 tracking-tight font-medium">
+              {lang === 'ja' ? '日本の偏愛カルチャーツアー' : 'Cultural Passion Tours in Japan'}
             </p>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <nav className="hidden md:flex items-center gap-1 bg-slate-900/60 p-1.5 rounded-full border border-slate-800">
+        <nav className="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-full border border-slate-200">
           <button
             onClick={() => setCurrentTab('explore')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               currentTab === 'explore'
-                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
             }`}
           >
             <Compass className="w-4 h-4" />
@@ -68,10 +68,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={() => setCurrentTab('requests')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               currentTab === 'requests'
-                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
             }`}
           >
             <MessageSquare className="w-4 h-4" />
@@ -80,10 +80,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={() => setCurrentTab('mypage')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               currentTab === 'mypage'
-                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
             }`}
           >
             {t.nav.myPage}
@@ -95,12 +95,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Favorites Button */}
           <button
             onClick={openFavorites}
-            className="relative p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-pink-400 transition-colors"
+            className="relative p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-rose-500 transition-colors cursor-pointer"
             title={t.nav.favorites}
           >
             <Bookmark className="w-4 h-4" />
             {favoritesCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-pink-500 text-white text-[11px] font-bold flex items-center justify-center shadow-lg shadow-pink-500/50">
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-500 text-white text-[11px] font-bold flex items-center justify-center shadow-sm">
                 {favoritesCount}
               </span>
             )}
@@ -109,16 +109,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Language Switcher */}
           <button
             onClick={() => setLang(lang === 'ja' ? 'en' : 'ja')}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-cyan-400 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 hover:text-blue-600 transition-colors cursor-pointer"
           >
-            <Globe className="w-3.5 h-3.5 text-cyan-400" />
+            <Globe className="w-3.5 h-3.5 text-blue-600" />
             <span>{lang === 'ja' ? 'EN' : 'JP'}</span>
           </button>
 
           {/* Host a Tour CTA Button */}
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-purple-600/25 hover:shadow-purple-600/40 transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer active:scale-95"
           >
             <PlusCircle className="w-4 h-4" />
             <span className="hidden sm:inline">{t.nav.hostTour}</span>
@@ -128,11 +128,11 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Mobile Sub Navigation */}
-      <div className="flex md:hidden border-t border-slate-900 bg-slate-950 px-4 py-2 justify-around">
+      <div className="flex md:hidden border-t border-slate-200 bg-white px-4 py-2 justify-around">
         <button
           onClick={() => setCurrentTab('explore')}
-          className={`flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg font-medium ${
-            currentTab === 'explore' ? 'text-cyan-400 bg-slate-900' : 'text-slate-400'
+          className={`flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg font-bold ${
+            currentTab === 'explore' ? 'text-blue-600 bg-blue-50' : 'text-slate-600'
           }`}
         >
           <Compass className="w-3.5 h-3.5" />
@@ -140,8 +140,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
         <button
           onClick={() => setCurrentTab('requests')}
-          className={`flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg font-medium ${
-            currentTab === 'requests' ? 'text-cyan-400 bg-slate-900' : 'text-slate-400'
+          className={`flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg font-bold ${
+            currentTab === 'requests' ? 'text-blue-600 bg-blue-50' : 'text-slate-600'
           }`}
         >
           <MessageSquare className="w-3.5 h-3.5" />
@@ -149,8 +149,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
         <button
           onClick={() => setCurrentTab('mypage')}
-          className={`flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg font-medium ${
-            currentTab === 'mypage' ? 'text-cyan-400 bg-slate-900' : 'text-slate-400'
+          className={`flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg font-bold ${
+            currentTab === 'mypage' ? 'text-blue-600 bg-blue-50' : 'text-slate-600'
           }`}
         >
           {t.nav.myPage}
