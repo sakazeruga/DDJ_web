@@ -11,7 +11,8 @@ import { MyPageView } from './components/MyPageView';
 import { FeaturesSection } from './components/FeaturesSection';
 import { TourShioriSection } from './components/TourShioriSection';
 import { Footer } from './components/Footer';
-import { Flame, LayoutGrid, List } from 'lucide-react';
+import { InteractiveMapView } from './components/InteractiveMapView';
+import { Flame, LayoutGrid, List, MapPin } from 'lucide-react';
 
 import type { 
   Tour, 
@@ -301,8 +302,8 @@ export function App() {
 
   const t = translations[lang];
 
-  // View Mode: 'grid' or 'catalog' (コミケお品書き風)
-  const [viewMode, setViewMode] = useState<'grid' | 'catalog'>('grid');
+  // View Mode: 'grid' | 'catalog' | 'map'
+  const [viewMode, setViewMode] = useState<'grid' | 'catalog' | 'map'>('grid');
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
@@ -395,7 +396,7 @@ export function App() {
                     }`}
                   >
                     <LayoutGrid className="w-3.5 h-3.5" />
-                    <span>{lang === 'ja' ? 'カード表示' : 'Grid'}</span>
+                    <span>{lang === 'ja' ? 'カード' : 'Grid'}</span>
                   </button>
                   <button
                     onClick={() => setViewMode('catalog')}
@@ -406,12 +407,23 @@ export function App() {
                     }`}
                   >
                     <List className="w-3.5 h-3.5" />
-                    <span>{lang === 'ja' ? 'リスト表示' : 'List'}</span>
+                    <span>{lang === 'ja' ? 'リスト' : 'List'}</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('map')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      viewMode === 'map'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-rose-500" />
+                    <span>{lang === 'ja' ? '🗺️ マップ' : 'Map'}</span>
                   </button>
                 </div>
               </div>
 
-              {/* Tours Grid or Catalog */}
+              {/* Tours Grid, Catalog, or Interactive Map */}
               {filteredTours.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-xs">
                   <p className="text-base text-slate-800 font-bold mb-2">
@@ -427,6 +439,12 @@ export function App() {
                     {t.filter.reset}
                   </button>
                 </div>
+              ) : viewMode === 'map' ? (
+                <InteractiveMapView
+                  tours={filteredTours}
+                  lang={lang}
+                  onSelectTour={(t) => setSelectedTour(t)}
+                />
               ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                   {filteredTours.map((tour) => (

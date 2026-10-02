@@ -31,6 +31,27 @@ export interface ItineraryItem {
   isDeepSpot?: boolean;
 }
 
+export type NearbySpotCategory = 'hotel' | 'dining' | 'souvenir' | 'scenery';
+
+export interface NearbySpot {
+  id: string;
+  name: string;
+  nameEn: string;
+  category: NearbySpotCategory;
+  categoryLabel: string;
+  categoryLabelEn: string;
+  description: string;
+  descriptionEn: string;
+  imageUrl: string;
+  distance: string; // e.g. "徒歩3分", "駅直結"
+  priceRange?: string; // e.g. "¥8,000〜/泊", "¥1,000〜¥2,000"
+  rating: number;
+  highlightTag: string; // e.g. "オタク歓迎", "聖地コラボメニュー", "老舗銘菓"
+  googleMapsQuery: string; // Google Maps検索・リンク用
+  lat?: number;
+  lng?: number;
+}
+
 export interface Tour {
   id: string;
   title: string;
@@ -59,6 +80,13 @@ export interface Tour {
   recommendedPreparationEn: string;
   meetingPoint: string;
   meetingPointEn: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+    zoom?: number;
+  };
+  googleMapsUrl?: string;
+  nearbySpots?: NearbySpot[];
   tags: string[];
   featured?: boolean;
   rating: number;

@@ -61,10 +61,10 @@ export const Hero: React.FC<HeroProps> = ({
                   {lang === 'ja' ? '本物の「深さ」へ仲間と歩く。' : 'Walk the Real Depths with Locals.'}
                 </span>
               </h1>
-              <p className="mt-4 text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed font-normal">
+              <p className="mt-3 text-slate-600 text-sm sm:text-base leading-relaxed font-normal">
                 {lang === 'ja'
-                  ? 'アニメの舞台となった情景、武将たちが激突した古戦場、海沿いを走るレトロ鉄道、時が止まった純喫茶。その道を愛してやまない偏愛ガイドが、あなたの旅を特別な物語に変えます。'
-                  : 'Iconic anime film settings, samurai battlefields, scenic heritage railway lines, and Showa book districts. Dedicated local specialists guide your journey into true Japanese culture.'}
+                  ? '歴史・鉄道・アニメ聖地・昭和レトロ・妖怪。現地の風景、周辺のグルメや宿まで丸わかりの偏愛ツアープラットフォーム。'
+                  : 'History, scenic railways, anime pilgrimages, and retro kissaten. Explore real-world spots, local dining, and hotels with passionate specialists.'}
               </p>
             </div>
 
@@ -72,15 +72,15 @@ export const Hero: React.FC<HeroProps> = ({
             <div className="flex flex-wrap gap-2 text-xs">
               <span className="flex items-center gap-1 bg-white border border-slate-200 text-slate-800 px-3 py-1.5 rounded-lg font-bold shadow-xs">
                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
-                {lang === 'ja' ? '旅のしおり＆特製マップ付き' : 'Custom Itinerary Shiori Included'}
+                {lang === 'ja' ? '旅のしおり＆周辺スポット完備' : 'Custom Itinerary & Nearby Spots'}
               </span>
               <span className="flex items-center gap-1 bg-white border border-slate-200 text-slate-800 px-3 py-1.5 rounded-lg font-bold shadow-xs">
-                <CheckCircle2 className="w-3.5 h-3.5 text-amber-600" />
-                {lang === 'ja' ? '専門知識を持つ偏愛ガイド専属' : 'Passionate Local Specialists'}
+                <Compass className="w-3.5 h-3.5 text-rose-500" />
+                {lang === 'ja' ? 'Googleマップ＆風景プレビュー' : 'Google Maps & Street Previews'}
               </span>
               <span className="flex items-center gap-1 bg-white border border-slate-200 text-slate-800 px-3 py-1.5 rounded-lg font-bold shadow-xs">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                {lang === 'ja' ? '少人数（最大4〜6名）で濃密' : 'Small-Group (Max 4-6)'}
+                {lang === 'ja' ? '公認偏愛ガイド専属案内' : 'Verified Local Guides'}
               </span>
             </div>
 

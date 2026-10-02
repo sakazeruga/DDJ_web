@@ -6,17 +6,24 @@ import {
   Star, 
   Heart, 
   Flame, 
-  CheckCircle2, 
   Calendar, 
   Users, 
   Tv, 
   Backpack, 
   Navigation,
   Send,
-  Languages
+  Languages,
+  Compass,
+  ExternalLink,
+  Eye,
+  Hotel,
+  UtensilsCrossed,
+  Gift,
+  Camera,
+  Layers
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import type { Tour, TourReview, Booking, Language } from '../types';
+import type { Tour, TourReview, Booking, Language, NearbySpotCategory } from '../types';
 import { translations } from '../i18n/translations';
 
 interface TourDetailModalProps {
@@ -43,6 +50,13 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
   if (!tour) return null;
   const t = translations[lang];
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'itinerary' | 'map' | 'guide' | 'reviews'>('itinerary');
+
+  // Map & Nearby spot states
+  const [nearbyCategory, setNearbyCategory] = useState<NearbySpotCategory | 'all'>('all');
+  const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
+
   // Booking states
   const [bookingDate, setBookingDate] = useState<string>(() => {
     const d = new Date();
@@ -68,6 +82,17 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
   // Calculate total price
   const totalPrice = tour.price * guestsCount;
 
+  // Selected spot or default tour coordinates
+  const currentSpot = tour.nearbySpots?.find((s) => s.id === selectedSpotId);
+  const mapCoords = currentSpot?.lat && currentSpot?.lng 
+    ? { lat: currentSpot.lat, lng: currentSpot.lng } 
+    : tour.coordinates || { lat: 35.6762, lng: 139.6503 };
+
+  const filteredNearbySpots = (tour.nearbySpots || []).filter((spot) => {
+    if (nearbyCategory === 'all') return true;
+    return spot.category === nearbyCategory;
+  });
+
   // Handle booking submission
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +114,6 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
       status: 'confirmed',
     });
 
-    // Launch celebratory confetti
     confetti({
       particleCount: 80,
       spread: 70,
@@ -118,6 +142,20 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
     setTimeout(() => setReviewSubmitted(false), 4000);
   };
 
+  // Category Icon Helper
+  const getCategoryIcon = (cat: NearbySpotCategory) => {
+    switch (cat) {
+      case 'hotel':
+        return <Hotel className="w-4 h-4 text-indigo-600" />;
+      case 'dining':
+        return <UtensilsCrossed className="w-4 h-4 text-amber-600" />;
+      case 'souvenir':
+        return <Gift className="w-4 h-4 text-emerald-600" />;
+      case 'scenery':
+        return <Camera className="w-4 h-4 text-sky-600" />;
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
       {/* Modal Container */}
@@ -126,7 +164,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
         <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-              Lv.{tour.otakuLevel} {lang === 'ja' ? '熱量・マニア度' : 'Depth Level'}
+              Lv.{tour.otakuLevel} {lang === 'ja' ? '熱量' : 'Depth'}
             </span>
             <div className="text-xs text-slate-500 font-medium hidden sm:flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5 text-rose-500" />
@@ -155,20 +193,20 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
         </div>
 
         {/* Scrollable Content Body */}
-        <div className="overflow-y-auto p-4 sm:p-6 md:p-8 space-y-8 bg-slate-50">
+        <div className="overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 bg-slate-50">
           {/* Hero Banner & Gallery */}
           <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
             <img
               src={tour.imageUrl}
               alt={lang === 'ja' ? tour.title : tour.titleEn}
-              className="w-full h-64 sm:h-80 md:h-96 object-cover"
+              className="w-full h-56 sm:h-72 md:h-80 object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent" />
 
-            <div className="absolute bottom-6 left-6 right-6">
+            <div className="absolute bottom-5 left-5 right-5">
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <span className="text-xs font-bold px-2.5 py-0.5 rounded bg-blue-600 text-white">
-                  {lang === 'ja' ? tour.category : tour.category}
+                  {lang === 'ja' ? tour.tags[0] || '文化ツアー' : tour.category}
                 </span>
                 <div className="flex items-center gap-1 text-xs text-white bg-black/60 px-2.5 py-0.5 rounded backdrop-blur-sm">
                   <Languages className="w-3.5 h-3.5 text-blue-300" />
@@ -176,304 +214,572 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                 </div>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight mb-2">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white leading-tight mb-1.5">
                 {lang === 'ja' ? tour.title : tour.titleEn}
               </h2>
-              <p className="text-sm sm:text-base text-yellow-300 font-medium">
+              <p className="text-xs sm:text-sm text-yellow-300 font-medium">
                 {lang === 'ja' ? tour.catchphrase : tour.catchphraseEn}
               </p>
             </div>
           </div>
 
+          {/* Quick Specs Strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-white p-3 rounded-xl border border-slate-200 text-center shadow-xs">
+              <Clock className="w-4 h-4 text-blue-600 mx-auto mb-1" />
+              <div className="text-[10px] text-slate-400 font-medium">{t.filter.duration}</div>
+              <div className="text-sm font-bold text-slate-900">{tour.durationHours} 時間</div>
+            </div>
+            <div className="bg-white p-3 rounded-xl border border-slate-200 text-center shadow-xs">
+              <Users className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+              <div className="text-[10px] text-slate-400 font-medium">定員</div>
+              <div className="text-sm font-bold text-slate-900">最大 {tour.maxParticipants}名</div>
+            </div>
+            <div className="bg-white p-3 rounded-xl border border-slate-200 text-center shadow-xs">
+              <Flame className="w-4 h-4 text-rose-600 mx-auto mb-1" />
+              <div className="text-[10px] text-slate-400 font-medium">マニア熱量</div>
+              <div className="text-sm font-bold text-slate-900">Lv.{tour.otakuLevel} / 5</div>
+            </div>
+            <div className="bg-white p-3 rounded-xl border border-slate-200 text-center shadow-xs">
+              <Star className="w-4 h-4 text-amber-500 mx-auto mb-1 fill-amber-500" />
+              <div className="text-[10px] text-slate-400 font-medium">参加者評価</div>
+              <div className="text-sm font-bold text-slate-900">{tour.rating} ({tour.reviewsCount})</div>
+            </div>
+          </div>
+
           {/* Main Grid: Left Details & Right Booking Form */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left 2 Columns: Tour Information */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Overview */}
-              <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 className="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                  <Navigation className="w-5 h-5 text-blue-600" />
-                  <span>{t.tourDetail.overview}</span>
-                </h3>
-                <p className="text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-line font-normal">
-                  {lang === 'ja' ? tour.description : tour.descriptionEn}
-                </p>
+            {/* Left 2 Columns: Tabs & Content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Navigation Tabs (Text-reduction & Visual organization) */}
+              <div className="flex items-center gap-1.5 p-1.5 bg-white rounded-2xl border border-slate-200 shadow-xs overflow-x-auto">
+                <button
+                  onClick={() => setActiveTab('itinerary')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'itinerary'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  }`}
+                >
+                  <Navigation className="w-4 h-4" />
+                  <span>{t.tourDetail.tabItinerary}</span>
+                </button>
 
-                {/* Quick Spec Pills */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-slate-100">
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
-                    <Clock className="w-4 h-4 text-blue-600 mx-auto mb-1" />
-                    <div className="text-[10px] text-slate-500 font-medium">{t.filter.duration}</div>
-                    <div className="text-sm font-bold text-slate-900">{tour.durationHours} 時間</div>
-                  </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
-                    <Users className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
-                    <div className="text-[10px] text-slate-500 font-medium">定員</div>
-                    <div className="text-sm font-bold text-slate-900">最大 {tour.maxParticipants}名</div>
-                  </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
-                    <Flame className="w-4 h-4 text-rose-600 mx-auto mb-1" />
-                    <div className="text-[10px] text-slate-500 font-medium">マニア度</div>
-                    <div className="text-sm font-bold text-slate-900">Lv.{tour.otakuLevel} / 5</div>
-                  </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
-                    <Star className="w-4 h-4 text-amber-500 mx-auto mb-1 fill-amber-500" />
-                    <div className="text-[10px] text-slate-500 font-medium">評価</div>
-                    <div className="text-sm font-bold text-slate-900">{tour.rating} ({tour.reviewsCount})</div>
-                  </div>
-                </div>
-              </section>
+                <button
+                  onClick={() => setActiveTab('map')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap relative ${
+                    activeTab === 'map'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  }`}
+                >
+                  <MapPin className="w-4 h-4 text-rose-400" />
+                  <span>{t.tourDetail.tabMapAndNearby}</span>
+                  <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                </button>
 
-              {/* Guide Profile */}
-              <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-blue-600" />
-                  <span>{t.tourDetail.guideInfo}</span>
-                </h3>
-                <div className="flex flex-col sm:flex-row items-start gap-4">
-                  <img
-                    src={tour.guide.avatar}
-                    alt={tour.guide.name}
-                    className="w-16 h-16 rounded-2xl object-cover border border-slate-200 shadow-sm"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div>
-                        <h4 className="text-base font-bold text-slate-900">
-                          {lang === 'ja' ? tour.guide.name : tour.guide.nameEn}
-                        </h4>
-                        <div className="text-xs text-blue-600 font-bold">
-                          {lang === 'ja' ? tour.guide.role : tour.guide.roleEn}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
-                        <span className="text-slate-500">{t.tourDetail.otakuHistory}:</span>
-                        <span className="text-blue-700 font-bold">{tour.guide.otakuYears}年</span>
-                      </div>
-                    </div>
+                <button
+                  onClick={() => setActiveTab('guide')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'guide'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  }`}
+                >
+                  <Users className="w-4 h-4" />
+                  <span>{t.tourDetail.tabGuide}</span>
+                </button>
 
-                    <p className="text-xs sm:text-sm text-slate-600 mt-2.5 leading-relaxed">
-                      {lang === 'ja' ? tour.guide.bio : tour.guide.bioEn}
+                <button
+                  onClick={() => setActiveTab('reviews')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'reviews'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  }`}
+                >
+                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                  <span>{t.tourDetail.tabReviews} ({tourReviews.length})</span>
+                </button>
+              </div>
+
+              {/* TAB 1: ITINERARY & SUMMARY */}
+              {activeTab === 'itinerary' && (
+                <div className="space-y-6">
+                  {/* Brief Overview */}
+                  <section className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+                    <p className="text-slate-700 text-sm leading-relaxed">
+                      {lang === 'ja' ? tour.description : tour.descriptionEn}
                     </p>
+                  </section>
 
-                    {/* Specialties */}
-                    <div className="flex flex-wrap gap-1.5 mt-3">
-                      {tour.guide.specialties.map((spec) => (
-                        <span
-                          key={spec}
-                          className="text-[11px] px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-medium"
-                        >
-                          ✦ {spec}
-                        </span>
+                  {/* Visual Timeline */}
+                  <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                    <h3 className="text-base font-bold text-slate-900 mb-5 flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-blue-600" />
+                      <span>{t.tourDetail.itinerary}</span>
+                    </h3>
+
+                    <div className="relative pl-6 space-y-5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-blue-200">
+                      {tour.itinerary.map((item, idx) => (
+                        <div key={idx} className="relative">
+                          <div className="absolute -left-[27px] top-1.5 w-4 h-4 rounded-full bg-white border-2 border-blue-600 flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                          </div>
+
+                          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 hover:border-blue-300 transition-colors">
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <span className="text-xs font-bold text-blue-700 px-2 py-0.5 rounded bg-blue-100 border border-blue-200">
+                                {item.time}
+                              </span>
+                              {item.isDeepSpot && (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800 border border-rose-200 flex items-center gap-1">
+                                  <Flame className="w-3 h-3 text-rose-600" />
+                                  {lang === 'ja' ? '注目ポイント' : 'Key Spot'}
+                                </span>
+                              )}
+                            </div>
+
+                            <h4 className="font-bold text-slate-900 text-sm mt-1">
+                              {lang === 'ja' ? item.spotTitle : item.spotTitleEn}
+                            </h4>
+
+                            <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                              {lang === 'ja' ? item.description : item.descriptionEn}
+                            </p>
+                          </div>
+                        </div>
                       ))}
                     </div>
+                  </section>
+
+                  {/* Compact Checklist: Meeting & What to Bring */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Meeting Point */}
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-2">
+                      <div className="flex items-center gap-2 text-xs font-bold text-rose-600">
+                        <MapPin className="w-4 h-4 text-rose-500" />
+                        <span>{t.tourDetail.meetingPlace}</span>
+                      </div>
+                      <p className="text-xs font-medium text-slate-800">
+                        {lang === 'ja' ? tour.meetingPoint : tour.meetingPointEn}
+                      </p>
+                      <button
+                        onClick={() => setActiveTab('map')}
+                        className="text-[11px] text-blue-600 hover:underline font-bold flex items-center gap-1 cursor-pointer pt-1"
+                      >
+                        <Compass className="w-3.5 h-3.5" />
+                        <span>Googleマップで確認する →</span>
+                      </button>
+                    </div>
+
+                    {/* What to Bring & Prep */}
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-2">
+                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-700">
+                        <Backpack className="w-4 h-4 text-emerald-600" />
+                        <span>{t.tourDetail.mustBring}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(lang === 'ja' ? tour.mustBring : tour.mustBringEn).map((item, idx) => (
+                          <span key={idx} className="text-[11px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
+                            ✓ {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Inclusions */}
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center gap-2 text-xs">
+                    <span className="font-bold text-slate-700">{t.tourDetail.included}:</span>
+                    {(lang === 'ja' ? tour.included : tour.includedEn).map((inc, i) => (
+                      <span key={i} className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700 font-medium text-[11px]">
+                        ✓ {inc}
+                      </span>
+                    ))}
                   </div>
                 </div>
-              </section>
+              )}
 
-              {/* Itinerary Timeline */}
-              <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-blue-600" />
-                  <span>{t.tourDetail.itinerary}</span>
-                </h3>
-
-                <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-blue-200">
-                  {tour.itinerary.map((item, idx) => (
-                    <div key={idx} className="relative">
-                      {/* Timeline dot */}
-                      <div className="absolute -left-[27px] top-1.5 w-4 h-4 rounded-full bg-white border-2 border-blue-600 flex items-center justify-center">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                      </div>
-
-                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-blue-300 transition-colors">
-                        <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
-                          <span className="text-xs font-bold text-blue-700 px-2.5 py-0.5 rounded bg-blue-100 border border-blue-200">
-                            {item.time}
-                          </span>
-                          {item.isDeepSpot && (
-                            <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800 border border-rose-200 flex items-center gap-1">
-                              <Flame className="w-3 h-3 text-rose-600" />
-                              {lang === 'ja' ? '注目ポイント' : 'Highlight Spot'}
-                            </span>
-                          )}
-                        </div>
-
-                        <h4 className="font-bold text-slate-900 text-sm sm:text-base mt-1">
-                          {lang === 'ja' ? item.spotTitle : item.spotTitleEn}
-                        </h4>
-
-                        <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
-                          {lang === 'ja' ? item.description : item.descriptionEn}
+              {/* TAB 2: MAP, SCENERY & NEARBY EXPLORATION */}
+              {activeTab === 'map' && (
+                <div className="space-y-6">
+                  {/* Google Maps Interactive Card */}
+                  <section className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                      <div>
+                        <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                          <MapPin className="w-5 h-5 text-rose-500" />
+                          <span>{t.tourDetail.mapSectionTitle}</span>
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {currentSpot 
+                            ? `選択中: ${lang === 'ja' ? currentSpot.name : currentSpot.nameEn}` 
+                            : lang === 'ja' ? tour.meetingPoint : tour.meetingPointEn}
                         </p>
                       </div>
+
+                      {/* External Map Action Buttons */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <a
+                          href={currentSpot 
+                            ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentSpot.googleMapsQuery)}` 
+                            : tour.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(tour.meetingPoint + ' ' + tour.area)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>{t.tourDetail.openGoogleMaps}</span>
+                        </a>
+
+                        <a
+                          href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${mapCoords.lat},${mapCoords.lng}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>{t.tourDetail.streetViewHint}</span>
+                        </a>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </section>
 
-              {/* Prep & Items */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Background Context */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                  <div className="flex items-center gap-2 text-sm font-bold text-indigo-700 mb-2">
-                    <Tv className="w-4 h-4 text-indigo-600" />
-                    <span>{t.tourDetail.prepRecommendation}</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    {lang === 'ja' ? tour.recommendedPreparation : tour.recommendedPreparationEn}
-                  </p>
-                </div>
+                    {/* Google Maps Iframe Embed */}
+                    <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 aspect-video sm:h-80 w-full shadow-inner">
+                      <iframe
+                        title="Google Maps"
+                        src={`https://maps.google.com/maps?q=${mapCoords.lat},${mapCoords.lng}&z=15&output=embed`}
+                        className="w-full h-full border-0"
+                        loading="lazy"
+                        allowFullScreen
+                      />
+                    </div>
 
-                {/* What to Bring */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                  <div className="flex items-center gap-2 text-sm font-bold text-emerald-700 mb-2">
-                    <Backpack className="w-4 h-4 text-emerald-600" />
-                    <span>{t.tourDetail.mustBring}</span>
-                  </div>
-                  <ul className="space-y-1.5 text-xs sm:text-sm text-slate-600">
-                    {(lang === 'ja' ? tour.mustBring : tour.mustBringEn).map((item, idx) => (
-                      <li key={idx} className="flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2.5 px-1">
+                      <span>📍 座標: {mapCoords.lat.toFixed(4)}, {mapCoords.lng.toFixed(4)}</span>
+                      <span>※地図内のドラッグ・拡大縮小・航空写真表示が可能です</span>
+                    </div>
+                  </section>
 
-              {/* Meeting Point & Inclusions */}
-              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
-                  <MapPin className="w-4 h-4 text-rose-500" />
-                  <span>{t.tourDetail.meetingPlace}:</span>
-                  <span className="text-slate-700 font-normal">
-                    {lang === 'ja' ? tour.meetingPoint : tour.meetingPointEn}
-                  </span>
-                </div>
+                  {/* Nearby Spots Recommendations */}
+                  <section className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                      <div>
+                        <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                          <Layers className="w-4 h-4 text-blue-600" />
+                          <span>{t.tourDetail.nearbySectionTitle}</span>
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {t.tourDetail.nearbySectionDesc}
+                        </p>
+                      </div>
 
-                <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-2 text-xs text-slate-500">
-                  <span className="font-bold text-slate-700">{t.tourDetail.included}:</span>
-                  {(lang === 'ja' ? tour.included : tour.includedEn).map((inc, i) => (
-                    <span key={i} className="px-2.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700 font-medium">
-                      ✓ {inc}
-                    </span>
-                  ))}
-                </div>
-              </div>
+                      {/* Category Filter Pills */}
+                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                        <button
+                          onClick={() => setNearbyCategory('all')}
+                          className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                            nearbyCategory === 'all'
+                              ? 'bg-slate-900 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {t.tourDetail.nearbyAll} ({(tour.nearbySpots || []).length})
+                        </button>
+                        <button
+                          onClick={() => setNearbyCategory('hotel')}
+                          className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                            nearbyCategory === 'hotel'
+                              ? 'bg-indigo-600 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {t.tourDetail.nearbyHotels}
+                        </button>
+                        <button
+                          onClick={() => setNearbyCategory('dining')}
+                          className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                            nearbyCategory === 'dining'
+                              ? 'bg-amber-600 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {t.tourDetail.nearbyDining}
+                        </button>
+                        <button
+                          onClick={() => setNearbyCategory('souvenir')}
+                          className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                            nearbyCategory === 'souvenir'
+                              ? 'bg-emerald-600 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {t.tourDetail.nearbySouvenir}
+                        </button>
+                        <button
+                          onClick={() => setNearbyCategory('scenery')}
+                          className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                            nearbyCategory === 'scenery'
+                              ? 'bg-sky-600 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {t.tourDetail.nearbyScenery}
+                        </button>
+                      </div>
+                    </div>
 
-              {/* Reviews Section */}
-              <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
-                    <span>{t.tourDetail.reviews} ({tourReviews.length})</span>
-                  </div>
-                  <span className="text-sm font-bold text-amber-600">★ {tour.rating}</span>
-                </h3>
+                    {/* Nearby Cards Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {filteredNearbySpots.map((spot) => {
+                        const isSelected = selectedSpotId === spot.id;
+                        return (
+                          <div
+                            key={spot.id}
+                            onClick={() => setSelectedSpotId(spot.id)}
+                            className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                              isSelected
+                                ? 'bg-blue-50/60 border-blue-500 shadow-md ring-2 ring-blue-400/30'
+                                : 'bg-slate-50 border-slate-200 hover:border-blue-300 hover:bg-white shadow-xs'
+                            }`}
+                          >
+                            <div>
+                              {/* Spot Image */}
+                              <div className="relative rounded-xl overflow-hidden aspect-video mb-3 border border-slate-200">
+                                <img
+                                  src={spot.imageUrl}
+                                  alt={lang === 'ja' ? spot.name : spot.nameEn}
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-xs text-[10px] font-bold shadow-xs">
+                                  {getCategoryIcon(spot.category)}
+                                  <span>{lang === 'ja' ? spot.categoryLabel : spot.categoryLabelEn}</span>
+                                </div>
+                                <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-xs text-white text-[10px] font-bold">
+                                  ★ {spot.rating}
+                                </div>
+                              </div>
 
-                {/* Existing Reviews List */}
-                <div className="space-y-3 mb-6">
-                  {tourReviews.length === 0 ? (
-                    <p className="text-xs text-slate-500 italic">
-                      {lang === 'ja' ? 'まだレビューはありません。最初の参加者になりましょう！' : 'No reviews yet. Be the first to join!'}
-                    </p>
-                  ) : (
-                    tourReviews.map((rev) => (
-                      <div key={rev.id} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-900">{rev.userName}</span>
-                            <span className="text-[11px] text-slate-500">{rev.userCountry}</span>
+                              {/* Spot Info */}
+                              <div className="flex items-start justify-between gap-1 mb-1">
+                                <h5 className="font-bold text-slate-900 text-sm leading-snug">
+                                  {lang === 'ja' ? spot.name : spot.nameEn}
+                                </h5>
+                              </div>
+
+                              {/* Highlight Tag & Distance */}
+                              <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                                  ✦ {spot.highlightTag}
+                                </span>
+                                <span className="text-[10px] text-slate-500 font-medium">
+                                  📍 {spot.distance}
+                                </span>
+                                {spot.priceRange && (
+                                  <span className="text-[10px] text-emerald-700 font-bold ml-auto">
+                                    {spot.priceRange}
+                                  </span>
+                                )}
+                              </div>
+
+                              <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-3">
+                                {lang === 'ja' ? spot.description : spot.descriptionEn}
+                              </p>
+                            </div>
+
+                            {/* Card Footer Actions */}
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-200/70 text-xs">
+                              <span className="text-[11px] font-bold text-blue-600">
+                                {isSelected ? '● 地図表示中' : 'クリックで地図表示'}
+                              </span>
+                              <a
+                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.googleMapsQuery)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-[11px] font-bold text-slate-600 hover:text-blue-600 flex items-center gap-1 hover:underline"
+                              >
+                                <span>Googleマップ</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-0.5 text-amber-500 text-xs">
-                            {Array.from({ length: rev.rating }).map((_, i) => (
-                              <Star key={i} className="w-3 h-3 fill-current" />
-                            ))}
+                        );
+                      })}
+                    </div>
+                  </section>
+                </div>
+              )}
+
+              {/* TAB 3: GUIDE PROFILE */}
+              {activeTab === 'guide' && (
+                <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-5">
+                  <div className="flex flex-col sm:flex-row items-start gap-4">
+                    <img
+                      src={tour.guide.avatar}
+                      alt={tour.guide.name}
+                      className="w-20 h-20 rounded-2xl object-cover border border-slate-200 shadow-sm"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                          <h4 className="text-lg font-black text-slate-900">
+                            {lang === 'ja' ? tour.guide.name : tour.guide.nameEn}
+                          </h4>
+                          <div className="text-xs text-blue-600 font-bold">
+                            {lang === 'ja' ? tour.guide.role : tour.guide.roleEn}
                           </div>
                         </div>
-                        <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">{rev.comment}</p>
-                        <div className="text-[10px] text-slate-400 mt-2">{rev.date}</div>
+                        <div className="flex items-center gap-2 text-xs bg-blue-50 text-blue-800 px-3 py-1.5 rounded-full border border-blue-200 font-bold">
+                          <span>{t.tourDetail.otakuHistory}:</span>
+                          <span>{tour.guide.otakuYears}年</span>
+                        </div>
                       </div>
-                    ))
-                  )}
-                </div>
 
-                {/* Write Review Form */}
-                <form onSubmit={handleReviewSubmit} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                  <h4 className="text-sm font-bold text-slate-900 mb-1">{t.tourDetail.writeReview}</h4>
-                  <p className="text-xs text-slate-500 mb-3">{t.tourDetail.writeReviewDesc}</p>
+                      <p className="text-xs sm:text-sm text-slate-600 mt-3 leading-relaxed">
+                        {lang === 'ja' ? tour.guide.bio : tour.guide.bioEn}
+                      </p>
 
-                  {reviewSubmitted && (
-                    <div className="mb-3 p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-xs font-medium">
-                      {lang === 'ja' ? 'レビューを投稿しました！ありがとうございます。' : 'Review submitted! Thank you!'}
+                      <div className="flex flex-wrap gap-1.5 mt-4">
+                        {tour.guide.specialties.map((spec) => (
+                          <span
+                            key={spec}
+                            className="text-[11px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 font-medium"
+                          >
+                            ✦ {spec}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  )}
+                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-                    <input
-                      type="text"
-                      placeholder={lang === 'ja' ? 'お名前' : 'Your Name'}
-                      value={reviewerName}
-                      onChange={(e) => setReviewerName(e.target.value)}
+                  {/* Recommendation / Prep */}
+                  <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200">
+                    <div className="flex items-center gap-2 text-xs font-bold text-amber-900 mb-1">
+                      <Tv className="w-4 h-4 text-amber-600" />
+                      <span>{t.tourDetail.prepRecommendation}</span>
+                    </div>
+                    <p className="text-xs text-amber-800 leading-relaxed">
+                      {lang === 'ja' ? tour.recommendedPreparation : tour.recommendedPreparationEn}
+                    </p>
+                  </div>
+                </section>
+              )}
+
+              {/* TAB 4: REVIEWS */}
+              {activeTab === 'reviews' && (
+                <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                      <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+                      <span>{t.tourDetail.reviews} ({tourReviews.length})</span>
+                    </h3>
+                    <span className="text-sm font-black text-amber-600">★ {tour.rating}</span>
+                  </div>
+
+                  {/* Reviews List */}
+                  <div className="space-y-3">
+                    {tourReviews.length === 0 ? (
+                      <p className="text-xs text-slate-500 italic py-4">
+                        {lang === 'ja' ? 'まだレビューはありません。最初の参加者になりましょう！' : 'No reviews yet. Be the first to join!'}
+                      </p>
+                    ) : (
+                      tourReviews.map((rev) => (
+                        <div key={rev.id} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-slate-900">{rev.userName}</span>
+                              <span className="text-[11px] text-slate-500">{rev.userCountry}</span>
+                            </div>
+                            <div className="flex items-center gap-0.5 text-amber-500 text-xs">
+                              {Array.from({ length: rev.rating }).map((_, i) => (
+                                <Star key={i} className="w-3 h-3 fill-current" />
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">{rev.comment}</p>
+                          <div className="text-[10px] text-slate-400 mt-2">{rev.date}</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Post Review Form */}
+                  <form onSubmit={handleReviewSubmit} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <h4 className="text-xs font-bold text-slate-900 mb-1">{t.tourDetail.writeReview}</h4>
+                    <p className="text-[11px] text-slate-500 mb-3">{t.tourDetail.writeReviewDesc}</p>
+
+                    {reviewSubmitted && (
+                      <div className="mb-3 p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-xs font-medium">
+                        {lang === 'ja' ? 'レビューを投稿しました！ありがとうございます。' : 'Review submitted! Thank you!'}
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                      <input
+                        type="text"
+                        placeholder={lang === 'ja' ? 'お名前' : 'Your Name'}
+                        value={reviewerName}
+                        onChange={(e) => setReviewerName(e.target.value)}
+                        required
+                        className="bg-white border border-slate-200 text-xs rounded-lg px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                      />
+                      <select
+                        value={reviewerCountry}
+                        onChange={(e) => setReviewerCountry(e.target.value)}
+                        className="bg-white border border-slate-200 text-xs rounded-lg px-3 py-2 text-slate-900"
+                      >
+                        <option value="Japan 🇯🇵">Japan 🇯🇵</option>
+                        <option value="USA 🇺🇸">USA 🇺🇸</option>
+                        <option value="Australia 🇦🇺">Australia 🇦🇺</option>
+                        <option value="UK 🇬🇧">UK 🇬🇧</option>
+                        <option value="Taiwan 🇹🇼">Taiwan 🇹🇼</option>
+                        <option value="Germany 🇩🇪">Germany 🇩🇪</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs text-slate-500">評価:</span>
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            type="button"
+                            key={star}
+                            onClick={() => setReviewRating(star)}
+                            className={`p-0.5 cursor-pointer ${reviewRating >= star ? 'text-amber-500' : 'text-slate-300'}`}
+                          >
+                            <Star className={`w-4 h-4 ${reviewRating >= star ? 'fill-current' : ''}`} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <textarea
+                      rows={2}
+                      placeholder={lang === 'ja' ? 'ツアーの感想やガイドへの応援メッセージ...' : 'Write your review...'}
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value)}
                       required
-                      className="bg-white border border-slate-200 text-xs rounded-lg px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                      className="w-full bg-white border border-slate-200 text-xs rounded-lg p-2.5 text-slate-900 placeholder-slate-400 mb-2 focus:outline-none focus:border-blue-500"
                     />
-                    <select
-                      value={reviewerCountry}
-                      onChange={(e) => setReviewerCountry(e.target.value)}
-                      className="bg-white border border-slate-200 text-xs rounded-lg px-3 py-2 text-slate-900"
+
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors cursor-pointer"
                     >
-                      <option value="Japan 🇯🇵">Japan 🇯🇵</option>
-                      <option value="USA 🇺🇸">USA 🇺🇸</option>
-                      <option value="Australia 🇦🇺">Australia 🇦🇺</option>
-                      <option value="UK 🇬🇧">UK 🇬🇧</option>
-                      <option value="Taiwan 🇹🇼">Taiwan 🇹🇼</option>
-                      <option value="Germany 🇩🇪">Germany 🇩🇪</option>
-                    </select>
-                  </div>
-
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs text-slate-500">評価:</span>
-                    <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          type="button"
-                          key={star}
-                          onClick={() => setReviewRating(star)}
-                          className={`p-1 cursor-pointer ${reviewRating >= star ? 'text-amber-500' : 'text-slate-300'}`}
-                        >
-                          <Star className={`w-4 h-4 ${reviewRating >= star ? 'fill-current' : ''}`} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <textarea
-                    rows={2}
-                    placeholder={lang === 'ja' ? 'ツアーの感想やガイドへの応援メッセージをどうぞ...' : 'Write your review...'}
-                    value={reviewComment}
-                    onChange={(e) => setReviewComment(e.target.value)}
-                    required
-                    className="w-full bg-white border border-slate-200 text-xs rounded-lg p-2.5 text-slate-900 placeholder-slate-400 mb-3 focus:outline-none focus:border-blue-500"
-                  />
-
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors cursor-pointer"
-                  >
-                    {lang === 'ja' ? 'レビューを送信' : 'Post Review'}
-                  </button>
-                </form>
-              </section>
+                      {lang === 'ja' ? 'レビューを送信' : 'Post Review'}
+                    </button>
+                  </form>
+                </section>
+              )}
             </div>
 
-            {/* Right Column: Booking Widget Card */}
+            {/* Right Column: Sticky Booking Card */}
             <div className="lg:col-span-1">
-              <div className="sticky top-20 bg-white p-6 rounded-2xl border border-slate-200 shadow-xl">
+              <div className="sticky top-20 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xl">
                 {isBooked ? (
-                  <div className="text-center py-6 space-y-4 relative overflow-hidden">
-                    {/* Stamp overlay */}
+                  <div className="text-center py-4 space-y-4 relative overflow-hidden">
                     <div className="w-20 h-20 mx-auto stamp-seal">
                       <img
                         src="/assets/seichi_stamp.jpg"
@@ -484,11 +790,11 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                     <div className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold border border-blue-200">
                       ★ 予約リクエスト受付完了 ★
                     </div>
-                    <h4 className="text-xl font-black text-slate-900">{t.bookingModal.successTitle}</h4>
+                    <h4 className="text-lg font-black text-slate-900">{t.bookingModal.successTitle}</h4>
                     <p className="text-xs text-slate-600 leading-relaxed">
                       {t.bookingModal.successDesc}
                     </p>
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left space-y-1.5 text-xs font-mono">
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left space-y-1 text-xs font-mono">
                       <div className="text-blue-700 font-bold border-b border-slate-200 pb-1 mb-2">
                         PASS #DDJ-{tour.id.toUpperCase()}-VERIFIED
                       </div>
@@ -499,14 +805,14 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                     </div>
                     <button
                       onClick={() => setIsBooked(false)}
-                      className="text-xs text-blue-600 hover:underline pt-2 inline-block cursor-pointer font-bold"
+                      className="text-xs text-blue-600 hover:underline pt-1 inline-block cursor-pointer font-bold"
                     >
                       {lang === 'ja' ? '← 別の日程でリクエストする' : '← Book another date'}
                     </button>
                   </div>
                 ) : (
                   <form onSubmit={handleBookingSubmit} className="space-y-4">
-                    <div className="flex items-baseline justify-between border-b border-slate-100 pb-4">
+                    <div className="flex items-baseline justify-between border-b border-slate-100 pb-3">
                       <div>
                         <span className="text-2xl font-black text-slate-900">¥{tour.price.toLocaleString()}</span>
                         <span className="text-xs text-slate-500 ml-1">{t.tourCard.perPerson}</span>
@@ -527,7 +833,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                         value={bookingDate}
                         onChange={(e) => setBookingDate(e.target.value)}
                         required
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
                       />
                     </div>
 
@@ -621,12 +927,6 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                       <Send className="w-4 h-4" />
                       <span>{t.bookingModal.submit}</span>
                     </button>
-
-                    <p className="text-[11px] text-slate-400 text-center leading-tight">
-                      {lang === 'ja' 
-                        ? '※送信後、ガイドとのチャットが開始され、集合場所等の詳細を直接相談できます。' 
-                        : '※Direct chat opens upon booking to coordinate final itinerary details.'}
-                    </p>
                   </form>
                 )}
               </div>
