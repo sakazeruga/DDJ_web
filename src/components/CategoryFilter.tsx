@@ -35,7 +35,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   ];
 
   return (
-    <div className="w-full overflow-x-auto py-3 scrollbar-none mb-4">
+    <div className="w-full overflow-x-auto py-3 no-scrollbar mb-4">
       <div className="flex items-center gap-2.5 min-w-max pb-1">
         {categories.map((cat) => {
           const isSelected = selectedCategory === cat.id;
