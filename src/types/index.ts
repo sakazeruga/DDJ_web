@@ -136,3 +136,11 @@ export interface TourReview {
 }
 
 export type Language = 'ja' | 'en';
+export type Currency = 'JPY' | 'USD' | 'EUR' | 'TWD';
+
+export interface GuideChatMessage {
+  id: string;
+  sender: 'user' | 'guide';
+  text: string;
+  timestamp: string;
+}

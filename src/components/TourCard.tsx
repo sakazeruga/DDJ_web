@@ -10,12 +10,14 @@ import {
   Ticket,
   Compass
 } from 'lucide-react';
-import type { Tour, Language } from '../types';
+import type { Tour, Language, Currency } from '../types';
 import { translations } from '../i18n/translations';
+import { formatPrice } from '../utils/currency';
 
 interface TourCardProps {
   tour: Tour;
   lang: Language;
+  currency?: Currency;
   onSelect: (tour: Tour) => void;
   isFavorite: boolean;
   onToggleFavorite: (tourId: string, e: React.MouseEvent) => void;
@@ -24,6 +26,7 @@ interface TourCardProps {
 export const TourCard: React.FC<TourCardProps> = ({
   tour,
   lang,
+  currency = 'JPY',
   onSelect,
   isFavorite,
   onToggleFavorite,
@@ -194,7 +197,7 @@ export const TourCard: React.FC<TourCardProps> = ({
             {/* Price */}
             <div className="text-right">
               <span className="text-lg font-black text-blue-600">
-                ¥{tour.price.toLocaleString()}
+                {formatPrice(tour.price, currency)}
               </span>
               <span className="text-[10px] text-slate-400 ml-1">/人</span>
             </div>

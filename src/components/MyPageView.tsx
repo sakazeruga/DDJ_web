@@ -8,12 +8,14 @@ import {
   Sparkles, 
   Bookmark 
 } from 'lucide-react';
-import type { Booking, Tour, Language } from '../types';
+import type { Booking, Tour, Language, Currency } from '../types';
 import { translations } from '../i18n/translations';
+import { formatPrice } from '../utils/currency';
 import { TourCard } from './TourCard';
 
 interface MyPageViewProps {
   lang: Language;
+  currency?: Currency;
   bookings: Booking[];
   onCancelBooking: (bookingId: string) => void;
   favorites: string[];
@@ -26,6 +28,7 @@ interface MyPageViewProps {
 
 export const MyPageView: React.FC<MyPageViewProps> = ({
   lang,
+  currency = 'JPY',
   bookings,
   onCancelBooking,
   favorites,
@@ -141,7 +144,7 @@ export const MyPageView: React.FC<MyPageViewProps> = ({
                           参加人数: <b className="text-slate-900">{booking.participantsCount}名</b>
                         </span>
                         <span className="text-blue-600 font-bold">
-                          ¥{booking.totalPrice.toLocaleString()}
+                          {formatPrice(booking.totalPrice, currency)}
                         </span>
                       </div>
                     </div>
@@ -177,6 +180,7 @@ export const MyPageView: React.FC<MyPageViewProps> = ({
                   key={tour.id}
                   tour={tour}
                   lang={lang}
+                  currency={currency}
                   onSelect={onSelectTour}
                   isFavorite={true}
                   onToggleFavorite={onToggleFavorite}

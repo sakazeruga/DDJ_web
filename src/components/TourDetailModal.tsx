@@ -10,26 +10,33 @@ import {
   Users, 
   Tv, 
   Backpack, 
-  Navigation,
-  Send,
-  Languages,
-  Compass,
-  ExternalLink,
-  Eye,
-  Hotel,
-  UtensilsCrossed,
-  Gift,
-  Camera,
-  Layers
+  Navigation, 
+  Send, 
+  Languages, 
+  Compass, 
+  ExternalLink, 
+  Eye, 
+  Hotel, 
+  UtensilsCrossed, 
+  Gift, 
+  Camera, 
+  Layers,
+  Ticket,
+  MessageSquare,
+  Footprints
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import type { Tour, TourReview, Booking, Language, NearbySpotCategory } from '../types';
+import type { Tour, TourReview, Booking, Language, NearbySpotCategory, Currency, ItineraryItem } from '../types';
 import { translations } from '../i18n/translations';
+import { formatPrice } from '../utils/currency';
+import { ShioriShareModal } from './ShioriShareModal';
+import { GuideChatModal } from './GuideChatModal';
 
 interface TourDetailModalProps {
   tour: Tour | null;
   onClose: () => void;
   lang: Language;
+  currency?: Currency;
   isFavorite: boolean;
   onToggleFavorite: (tourId: string, e: React.MouseEvent) => void;
   reviews: TourReview[];
@@ -41,6 +48,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
   tour,
   onClose,
   lang,
+  currency = 'JPY',
   isFavorite,
   onToggleFavorite,
   reviews,
@@ -50,12 +58,17 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
   if (!tour) return null;
   const t = translations[lang];
 
+  // Modals for Share & Guide Inquiry
+  const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
+  const [isGuideChatOpen, setIsGuideChatOpen] = useState<boolean>(false);
+
   // Tab state
   const [activeTab, setActiveTab] = useState<'itinerary' | 'map' | 'guide' | 'reviews'>('itinerary');
 
-  // Map & Nearby spot states
+  // Map & Nearby spot states & focused route step
   const [nearbyCategory, setNearbyCategory] = useState<NearbySpotCategory | 'all'>('all');
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
+  const [focusedItinerary, setFocusedItinerary] = useState<ItineraryItem | null>(null);
 
   // Booking states
   const [bookingDate, setBookingDate] = useState<string>(() => {
@@ -87,6 +100,22 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
   const mapCoords = currentSpot?.lat && currentSpot?.lng 
     ? { lat: currentSpot.lat, lng: currentSpot.lng } 
     : tour.coordinates || { lat: 35.6762, lng: 139.6503 };
+
+  const mapQueryParam = focusedItinerary
+    ? `${encodeURIComponent(focusedItinerary.spotTitle + ' ' + tour.area)}`
+    : currentSpot
+    ? `${encodeURIComponent(currentSpot.googleMapsQuery || currentSpot.name)}`
+    : `${mapCoords.lat},${mapCoords.lng}`;
+
+  const origin = encodeURIComponent(tour.meetingPoint + ' ' + tour.area);
+  const destination = encodeURIComponent(
+    tour.itinerary[tour.itinerary.length - 1]?.spotTitle + ' ' + tour.area
+  );
+  const waypoints = tour.itinerary
+    .slice(1, -1)
+    .map((item) => encodeURIComponent(item.spotTitle))
+    .join('|');
+  const googleMapsDirectionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypoints ? `&waypoints=${waypoints}` : ''}&travelmode=walking`;
 
   const filteredNearbySpots = (tour.nearbySpots || []).filter((spot) => {
     if (nearbyCategory === 'all') return true;
@@ -173,6 +202,26 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Guide Consultation CTA */}
+            <button
+              onClick={() => setIsGuideChatOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition-colors cursor-pointer"
+              title="ガイドに事前質問・相談"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
+              <span className="hidden sm:inline">{lang === 'ja' ? 'ガイドに質問' : 'Ask Guide'}</span>
+            </button>
+
+            {/* Shiori Share CTA */}
+            <button
+              onClick={() => setIsShareModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              title="旅のしおりをSNSシェア・保存"
+            >
+              <Ticket className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{lang === 'ja' ? '旅のしおり' : 'Pass'}</span>
+            </button>
+
             <button
               onClick={(e) => onToggleFavorite(tour.id, e)}
               className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
@@ -180,6 +229,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                   ? 'bg-rose-500 text-white border-rose-500 shadow-sm'
                   : 'bg-slate-50 text-slate-700 border-slate-200 hover:text-rose-600'
               }`}
+              title="お気に入り"
             >
               <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
             </button>
@@ -413,14 +463,28 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                           <span>{t.tourDetail.mapSectionTitle}</span>
                         </h3>
                         <p className="text-xs text-slate-500 mt-0.5">
-                          {currentSpot 
-                            ? `選択中: ${lang === 'ja' ? currentSpot.name : currentSpot.nameEn}` 
+                          {focusedItinerary
+                            ? `🚶 順路スポット: ${focusedItinerary.spotTitle}`
+                            : currentSpot 
+                            ? `📍 周辺スポット: ${lang === 'ja' ? currentSpot.name : currentSpot.nameEn}` 
                             : lang === 'ja' ? tour.meetingPoint : tour.meetingPointEn}
                         </p>
                       </div>
 
                       {/* External Map Action Buttons */}
                       <div className="flex items-center gap-2 flex-wrap">
+                        <a
+                          href={googleMapsDirectionsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                          title="Googleマップでモデルコース全ルート案内"
+                        >
+                          <Navigation className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>徒歩ナビ開始</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+
                         <a
                           href={currentSpot 
                             ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentSpot.googleMapsQuery)}` 
@@ -449,7 +513,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                     <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 aspect-video sm:h-80 w-full shadow-inner">
                       <iframe
                         title="Google Maps"
-                        src={`https://maps.google.com/maps?q=${mapCoords.lat},${mapCoords.lng}&z=15&output=embed`}
+                        src={`https://maps.google.com/maps?q=${mapQueryParam}&z=15&output=embed`}
                         className="w-full h-full border-0"
                         loading="lazy"
                         allowFullScreen
@@ -459,6 +523,55 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                     <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2.5 px-1">
                       <span>📍 座標: {mapCoords.lat.toFixed(4)}, {mapCoords.lng.toFixed(4)}</span>
                       <span>※地図内のドラッグ・拡大縮小・航空写真表示が可能です</span>
+                    </div>
+
+                    {/* Model Course Route Stepper */}
+                    <div className="mt-5 pt-4 border-t border-slate-100">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                          <Footprints className="w-4 h-4 text-blue-600" />
+                          <span>モデルコース順路案内（クリックで地図が移動します）</span>
+                        </h4>
+                        <span className="text-[11px] text-slate-400">全{tour.itinerary.length}拠点</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                        {tour.itinerary.map((item, idx) => {
+                          const isFocused = focusedItinerary?.spotTitle === item.spotTitle;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                setFocusedItinerary(item);
+                                setSelectedSpotId(null);
+                              }}
+                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                                isFocused
+                                  ? 'bg-blue-50 border-blue-500 shadow-xs ring-1 ring-blue-400'
+                                  : 'bg-slate-50 border-slate-200 hover:border-blue-300 hover:bg-white'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                                  isFocused ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'
+                                }`}>
+                                  順路 {idx + 1}
+                                </span>
+                                <span className="text-[10px] text-blue-600 font-mono font-bold">
+                                  {item.time}
+                                </span>
+                              </div>
+                              <div className="text-xs font-bold text-slate-900 truncate">
+                                {lang === 'ja' ? item.spotTitle : item.spotTitleEn}
+                              </div>
+                              <div className="text-[10px] text-slate-400 mt-0.5">
+                                {idx < tour.itinerary.length - 1 ? '🚶 徒歩 約5〜10分' : '🏁 終了・解散'}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </section>
 
@@ -654,6 +767,18 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                     </div>
                   </div>
 
+                  {/* Direct Inquiry CTA button */}
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsGuideChatOpen(true)}
+                      className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span>{lang === 'ja' ? `${tour.guide.name}さんに事前質問・相談する` : `Chat with ${tour.guide.nameEn}`}</span>
+                    </button>
+                  </div>
+
                   {/* Recommendation / Prep */}
                   <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200">
                     <div className="flex items-center gap-2 text-xs font-bold text-amber-900 mb-1">
@@ -800,21 +925,33 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                       </div>
                       <div className="text-slate-500">参加日: <span className="text-slate-900 font-bold">{bookingDate}</span></div>
                       <div className="text-slate-500">人数: <span className="text-slate-900 font-bold">{guestsCount}名</span></div>
-                      <div className="text-slate-500">合計: <span className="text-blue-600 font-black text-sm">¥{totalPrice.toLocaleString()}</span></div>
+                      <div className="text-slate-500">合計: <span className="text-blue-600 font-black text-sm">{formatPrice(totalPrice, currency)}</span></div>
                       <div className="text-slate-500">ガイド: <span className="text-slate-900 font-bold">{tour.guide.name}</span></div>
                     </div>
-                    <button
-                      onClick={() => setIsBooked(false)}
-                      className="text-xs text-blue-600 hover:underline pt-1 inline-block cursor-pointer font-bold"
-                    >
-                      {lang === 'ja' ? '← 別の日程でリクエストする' : '← Book another date'}
-                    </button>
+
+                    <div className="pt-2 flex flex-col gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsShareModalOpen(true)}
+                        className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <Ticket className="w-4 h-4" />
+                        <span>🎫 旅のしおりをSNSシェア・保存</span>
+                      </button>
+
+                      <button
+                        onClick={() => setIsBooked(false)}
+                        className="text-xs text-slate-500 hover:text-blue-600 hover:underline pt-1 inline-block cursor-pointer font-bold"
+                      >
+                        {lang === 'ja' ? '← 別の日程でリクエストする' : '← Book another date'}
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <form onSubmit={handleBookingSubmit} className="space-y-4">
                     <div className="flex items-baseline justify-between border-b border-slate-100 pb-3">
                       <div>
-                        <span className="text-2xl font-black text-slate-900">¥{tour.price.toLocaleString()}</span>
+                        <span className="text-2xl font-black text-slate-900">{formatPrice(tour.price, currency)}</span>
                         <span className="text-xs text-slate-500 ml-1">{t.tourCard.perPerson}</span>
                       </div>
                       <div className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -910,14 +1047,24 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                     {/* Price Calculation Box */}
                     <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5 text-xs">
                       <div className="flex justify-between text-slate-500">
-                        <span>¥{tour.price.toLocaleString()} × {guestsCount}名</span>
-                        <span>¥{totalPrice.toLocaleString()}</span>
+                        <span>{formatPrice(tour.price, currency)} × {guestsCount}名</span>
+                        <span>{formatPrice(totalPrice, currency)}</span>
                       </div>
                       <div className="flex justify-between font-bold text-slate-900 pt-2 border-t border-slate-200 text-sm">
                         <span>{t.bookingModal.totalPrice}</span>
-                        <span className="text-blue-600 font-black">¥{totalPrice.toLocaleString()}</span>
+                        <span className="text-blue-600 font-black">{formatPrice(totalPrice, currency)}</span>
                       </div>
                     </div>
+
+                    {/* Pre-Booking Guide Consultation Button */}
+                    <button
+                      type="button"
+                      onClick={() => setIsGuideChatOpen(true)}
+                      className="w-full py-2.5 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs border border-blue-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <MessageSquare className="w-4 h-4 text-blue-600" />
+                      <span>{lang === 'ja' ? '💬 不安な点をガイドに事前相談する' : '💬 Ask Guide Before Booking'}</span>
+                    </button>
 
                     {/* Submit Button */}
                     <button
@@ -934,6 +1081,23 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Shiori Ticket Share Modal */}
+      <ShioriShareModal
+        tour={tour}
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        lang={lang}
+      />
+
+      {/* Guide Inquiry Chat Modal */}
+      <GuideChatModal
+        guide={tour.guide}
+        tourTitle={lang === 'ja' ? tour.title : tour.titleEn}
+        isOpen={isGuideChatOpen}
+        onClose={() => setIsGuideChatOpen(false)}
+        lang={lang}
+      />
     </div>
   );
 };

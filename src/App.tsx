@@ -20,10 +20,12 @@ import type {
   TourReview, 
   Booking, 
   Language, 
+  Currency,
   TourCategory 
 } from './types';
 import { INITIAL_TOURS, INITIAL_REQUESTS, INITIAL_REVIEWS } from './data/mockTours';
 import { translations } from './i18n/translations';
+import { formatPrice } from './utils/currency';
 
 export function App() {
   // Language state
@@ -34,6 +36,15 @@ export function App() {
   useEffect(() => {
     localStorage.setItem('ddj_lang', lang);
   }, [lang]);
+
+  // Currency state
+  const [currency, setCurrency] = useState<Currency>(() => {
+    return (localStorage.getItem('ddj_currency') as Currency) || 'JPY';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('ddj_currency', currency);
+  }, [currency]);
 
   // Tab navigation
   const [currentTab, setCurrentTab] = useState<'explore' | 'requests' | 'mypage'>('explore');
@@ -319,6 +330,8 @@ export function App() {
         openCreateModal={() => setIsCreateModalOpen(true)}
         lang={lang}
         setLang={setLang}
+        currency={currency}
+        setCurrency={setCurrency}
         favoritesCount={favorites.length}
         openFavorites={() => {
           setCurrentTab('mypage');
@@ -443,6 +456,7 @@ export function App() {
                 <InteractiveMapView
                   tours={filteredTours}
                   lang={lang}
+                  currency={currency}
                   onSelectTour={(t) => setSelectedTour(t)}
                 />
               ) : viewMode === 'grid' ? (
@@ -452,6 +466,7 @@ export function App() {
                       key={tour.id}
                       tour={tour}
                       lang={lang}
+                      currency={currency}
                       onSelect={(t) => setSelectedTour(t)}
                       isFavorite={favorites.includes(tour.id)}
                       onToggleFavorite={handleToggleFavorite}
@@ -501,7 +516,7 @@ export function App() {
                         <div className="text-right">
                           <div className="text-[10px] text-slate-400 font-medium">1名あたり</div>
                           <div className="text-xl font-black text-slate-900">
-                            <span className="text-blue-600">¥{tour.price.toLocaleString()}</span>
+                            <span className="text-blue-600">{formatPrice(tour.price, currency)}</span>
                           </div>
                         </div>
                         <button
@@ -540,6 +555,7 @@ export function App() {
         {currentTab === 'mypage' && (
           <MyPageView
             lang={lang}
+            currency={currency}
             bookings={bookings}
             onCancelBooking={handleCancelBooking}
             favorites={favorites}
@@ -558,6 +574,7 @@ export function App() {
           tour={selectedTour}
           onClose={() => setSelectedTour(null)}
           lang={lang}
+          currency={currency}
           isFavorite={favorites.includes(selectedTour.id)}
           onToggleFavorite={handleToggleFavorite}
           reviews={reviews}
