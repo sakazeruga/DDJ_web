@@ -9,7 +9,9 @@ import { CreateTourModal } from './components/CreateTourModal';
 import { RequestBoardView } from './components/RequestBoardView';
 import { MyPageView } from './components/MyPageView';
 import { FeaturesSection } from './components/FeaturesSection';
+import { TourShioriSection } from './components/TourShioriSection';
 import { Footer } from './components/Footer';
+import { Flame, LayoutGrid, List } from 'lucide-react';
 
 import type { 
   Tour, 
@@ -299,8 +301,11 @@ export function App() {
 
   const t = translations[lang];
 
+  // View Mode: 'grid' or 'catalog' (コミケお品書き風)
+  const [viewMode, setViewMode] = useState<'grid' | 'catalog'>('grid');
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-purple-500 selection:text-white">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-yellow-400 selection:text-black">
       {/* Navbar */}
       <Navbar
         currentTab={currentTab}
@@ -364,7 +369,49 @@ export function App() {
                 availableAreas={availableAreas}
               />
 
-              {/* Tours Grid */}
+              {/* Section Title & View Mode Toggle */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full otaku-badge-yellow text-xs font-black mb-2">
+                    <Flame className="w-3.5 h-3.5 text-black fill-black" />
+                    <span>{lang === 'ja' ? '厳選ディープツアー一覧' : 'Featured Deep Tours'}</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-black text-white">
+                    {lang === 'ja' ? '今すぐ参加できる聖地・オタクツアー' : 'Available Otaku Tours & Pilgrimages'}
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                    {lang === 'ja' ? '＼ 全ツアー・旅のしおり＆巡礼マップ付き！ガイドと少人数で潜行 ／' : 'All tours include itinerary shiori & pilgrimage guide'}
+                  </p>
+                </div>
+
+                {/* View Mode Toggle (Grid vs コミケお品書き) */}
+                <div className="flex items-center gap-1 bg-slate-900 p-1.5 rounded-xl border border-slate-800 self-end sm:self-auto text-xs font-bold">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+                      viewMode === 'grid'
+                        ? 'bg-purple-600 text-white shadow'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                    <span>{lang === 'ja' ? 'カード表示' : 'Grid'}</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('catalog')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+                      viewMode === 'catalog'
+                        ? 'bg-yellow-400 text-black shadow font-black'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <List className="w-3.5 h-3.5" />
+                    <span>{lang === 'ja' ? 'お品書き表示' : 'Catalog'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Tours Grid or Catalog */}
               {filteredTours.length === 0 ? (
                 <div className="text-center py-20 bg-slate-900/40 rounded-3xl border border-slate-800">
                   <p className="text-base text-slate-300 font-semibold mb-2">
@@ -380,7 +427,7 @@ export function App() {
                     {t.filter.reset}
                   </button>
                 </div>
-              ) : (
+              ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                   {filteredTours.map((tour) => (
                     <TourCard
@@ -393,8 +440,67 @@ export function App() {
                     />
                   ))}
                 </div>
+              ) : (
+                /* Catalog / お品書き風リスト表示 */
+                <div className="space-y-4">
+                  {filteredTours.map((tour) => (
+                    <div
+                      key={tour.id}
+                      onClick={() => setSelectedTour(tour)}
+                      className="bg-slate-900 hover:bg-slate-850 rounded-2xl border-2 border-slate-700 hover:border-yellow-400 p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 cursor-pointer otaku-sticker transition-all"
+                    >
+                      <div className="flex items-start sm:items-center gap-4 flex-1">
+                        <img
+                          src={tour.imageUrl}
+                          alt={tour.title}
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-slate-800 flex-shrink-0"
+                        />
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="otaku-badge-yellow text-[10px] px-2 py-0.5 rounded-full font-black">
+                              Lv.{tour.otakuLevel} 沼度
+                            </span>
+                            <span className="text-xs text-cyan-400 font-bold bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                              {tour.area}
+                            </span>
+                            <span className="text-xs text-slate-400">
+                              所要: {tour.durationHours}時間 / 定員 {tour.maxParticipants}名
+                            </span>
+                          </div>
+                          <h3 className="font-black text-white text-base hover:text-yellow-400 transition-colors">
+                            {lang === 'ja' ? tour.title : tour.titleEn}
+                          </h3>
+                          <p className="text-xs text-slate-300 line-clamp-1">
+                            {tour.catchphrase}
+                          </p>
+                          <div className="text-[11px] text-purple-300">
+                            ガイド: <b>{tour.guide.name}</b> (オタク歴{tour.guide.otakuYears}年)
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-slate-800">
+                        <div className="text-right">
+                          <div className="text-[10px] text-slate-400">1名あたり</div>
+                          <div className="text-xl font-black text-yellow-400">
+                            ¥{tour.price.toLocaleString()}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="px-4 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black text-xs shadow transition-all whitespace-nowrap"
+                        >
+                          旅程・予約へ →
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
+
+            {/* Tour Itinerary Shiori Section */}
+            <TourShioriSection lang={lang} />
 
             {/* Features & Why Us */}
             <FeaturesSection

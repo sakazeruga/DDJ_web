@@ -473,24 +473,36 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
             <div className="lg:col-span-1">
               <div className="sticky top-20 bg-slate-950 p-6 rounded-2xl border-2 border-purple-500/40 shadow-2xl shadow-purple-950/40">
                 {isBooked ? (
-                  <div className="text-center py-6 space-y-4">
-                    <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center mx-auto text-emerald-400 animate-pulse">
-                      <CheckCircle2 className="w-8 h-8" />
+                  <div className="text-center py-6 space-y-4 relative overflow-hidden">
+                    {/* Stamp overlay */}
+                    <div className="w-20 h-20 mx-auto stamp-seal">
+                      <img
+                        src="/assets/seichi_stamp.jpg"
+                        alt="聖地巡礼 済"
+                        className="w-full h-full object-contain rounded-full shadow-lg"
+                      />
                     </div>
-                    <h4 className="text-xl font-bold text-white">{t.bookingModal.successTitle}</h4>
+                    <div className="otaku-badge-yellow inline-block px-3 py-1 rounded-full text-xs font-black">
+                      ★ 聖地巡礼パス発券完了 ★
+                    </div>
+                    <h4 className="text-xl font-black text-white">{t.bookingModal.successTitle}</h4>
                     <p className="text-xs text-slate-300 leading-relaxed">
                       {t.bookingModal.successDesc}
                     </p>
-                    <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 text-left space-y-1 text-xs">
-                      <div className="text-slate-400">参加日: <span className="text-white font-semibold">{bookingDate}</span></div>
-                      <div className="text-slate-400">人数: <span className="text-white font-semibold">{guestsCount}名</span></div>
-                      <div className="text-slate-400">合計: <span className="text-cyan-400 font-bold">¥{totalPrice.toLocaleString()}</span></div>
+                    <div className="bg-slate-900 p-4 rounded-2xl border-2 border-slate-700 text-left space-y-1.5 text-xs font-mono">
+                      <div className="text-yellow-400 font-bold border-b border-slate-800 pb-1 mb-2">
+                        PASS #DDJ-{tour.id.toUpperCase()}-VERIFIED
+                      </div>
+                      <div className="text-slate-400">参加日: <span className="text-white font-bold">{bookingDate}</span></div>
+                      <div className="text-slate-400">人数: <span className="text-white font-bold">{guestsCount}名</span></div>
+                      <div className="text-slate-400">合計: <span className="text-yellow-400 font-black text-sm">¥{totalPrice.toLocaleString()}</span></div>
+                      <div className="text-slate-400">ガイド: <span className="text-purple-300 font-bold">{tour.guide.name}</span></div>
                     </div>
                     <button
                       onClick={() => setIsBooked(false)}
-                      className="text-xs text-purple-400 hover:underline pt-2 inline-block cursor-pointer"
+                      className="text-xs text-yellow-400 hover:underline pt-2 inline-block cursor-pointer font-bold"
                     >
-                      {lang === 'ja' ? '別の日程でリクエストする' : 'Book another date'}
+                      {lang === 'ja' ? '← 別の日程でリクエストする' : '← Book another date'}
                     </button>
                   </div>
                 ) : (
