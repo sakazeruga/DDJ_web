@@ -1,4 +1,4 @@
-export type TourCategory = 
+export type BuiltinTourCategory = 
   | 'anime-pilgrimage'     // アニメ・漫画・聖地巡礼
   | 'history-castle'        // 歴史・城郭・新選組・刀剣
   | 'railway-train'         // 鉄道・秘境駅・レトロ車両
@@ -7,6 +7,22 @@ export type TourCategory =
   | 'oshikatsu-subculture'  // 推し活・アイドル・サブカル
   | 'music-sound'           // 音楽・音風景・フィールドレコーディング（MOTTAINAI SOUND）
   | 'custom';               // 特注・カスタム
+
+export type TourCategory = BuiltinTourCategory | (string & {});
+
+export interface CustomTheme {
+  id: string;               // e.g. 'custom-industrial-ruins'
+  name: string;             // e.g. '近代化遺産・産業廃墟'
+  nameEn: string;           // e.g. 'Industrial Heritage & Ruins'
+  description: string;      // 説明・ジャンルの特徴
+  categoryKey: string;      // フィルターやツアー紐付け用キー
+  icon: string;             // Lucide icon name or emoji
+  imageUrl?: string;        // Heroチップ用サムネイル
+  sampleTags: string[];     // サンプルタグ
+  createdAt: string;
+  isAiGenerated: boolean;
+  matchReason?: string;     // AIが非該当と判断した理由
+}
 
 export interface TourGuide {
   id: string;
@@ -30,6 +46,7 @@ export interface ItineraryItem {
   description: string;
   descriptionEn: string;
   isDeepSpot?: boolean;
+  mapQuery?: string;
 }
 
 export type NearbySpotCategory = 'hotel' | 'dining' | 'souvenir' | 'scenery';
@@ -94,6 +111,7 @@ export interface Tour {
   reviewsCount: number;
   createdAt: string;
   talkSessionConfig?: TalkSessionConfig;
+  routeWaypoints?: string[];
 }
 
 export interface TalkSessionConfig {

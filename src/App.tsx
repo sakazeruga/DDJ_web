@@ -22,11 +22,42 @@ import type {
   TalkSessionBooking,
   Language, 
   Currency,
-  TourCategory 
+  TourCategory,
+  CustomTheme
 } from './types';
 import { INITIAL_TOURS, INITIAL_REQUESTS, INITIAL_REVIEWS } from './data/mockTours';
 import { translations } from './i18n/translations';
 import { formatPrice } from './utils/currency';
+
+// Initial preloaded niche custom themes for instant rich discovery
+const INITIAL_CUSTOM_THEMES: CustomTheme[] = [
+  {
+    id: 'theme-industrial-ruins-default',
+    name: '近代化遺産・産業廃墟探訪',
+    nameEn: 'Industrial Heritage & Ruins',
+    categoryKey: 'industrial-ruins',
+    description: '炭鉱跡、旧発電所、赤煉瓦遺構など日本の近代化遺産と廃墟美を巡る。',
+    icon: 'Warehouse',
+    imageUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80',
+    sampleTags: ['近代化遺産', '産業遺構', '廃墟美'],
+    createdAt: '2026-10-01',
+    isAiGenerated: true,
+    matchReason: '既存7カテゴリーに非該当な新ジャンル',
+  },
+  {
+    id: 'theme-sento-sauna-default',
+    name: '銭湯・サウナ・温浴文化',
+    nameEn: 'Sento & Sauna Culture',
+    categoryKey: 'sento-sauna',
+    description: '宮造り銭湯の富士山ペンキ絵や下町サウナ、釜場の湯守文化を味わう。',
+    icon: 'Flame',
+    imageUrl: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
+    sampleTags: ['銭湯', 'ペンキ絵', 'サウナ巡り'],
+    createdAt: '2026-10-01',
+    isAiGenerated: true,
+    matchReason: '下町温浴・銭湯建築文化に特化した新ジャンル',
+  },
+];
 
 export function App() {
   // Language state
@@ -202,6 +233,33 @@ export function App() {
   useEffect(() => {
     localStorage.setItem('ddj_favorites', JSON.stringify(favorites));
   }, [favorites]);
+
+  // Dynamic Custom Theme Tags (AI detected & User created, synced with LocalStorage)
+  const [customThemes, setCustomThemes] = useState<CustomTheme[]>(() => {
+    const saved = localStorage.getItem('ddj_custom_themes_v2');
+    if (saved) {
+      try {
+        const parsed: CustomTheme[] = JSON.parse(saved);
+        const existingKeys = new Set(parsed.map((c) => c.categoryKey));
+        const missing = INITIAL_CUSTOM_THEMES.filter((c) => !existingKeys.has(c.categoryKey));
+        return [...missing, ...parsed];
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return INITIAL_CUSTOM_THEMES;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('ddj_custom_themes_v2', JSON.stringify(customThemes));
+  }, [customThemes]);
+
+  const handleAddCustomTheme = (newTheme: CustomTheme) => {
+    setCustomThemes((prev) => {
+      if (prev.some((t) => t.categoryKey === newTheme.categoryKey)) return prev;
+      return [newTheme, ...prev];
+    });
+  };
 
   // Modal states & URL deep-linking (?tour={tourId})
   const [selectedTour, setSelectedTour] = useState<Tour | null>(null);
@@ -404,9 +462,22 @@ export function App() {
           if (!matchTitle && !matchDesc && !matchArea && !matchTags) return false;
         }
 
-        // Category
-        if (selectedCategory !== 'all' && tour.category !== selectedCategory) {
-          return false;
+        // Category / Custom Theme Filter
+        if (selectedCategory !== 'all') {
+          const customTheme = customThemes.find((c) => c.categoryKey === selectedCategory);
+          const isDirectCategoryMatch = tour.category === selectedCategory;
+          const isCustomThemeMatch = customTheme
+            ? tour.tags.some(
+                (t) =>
+                  t.toLowerCase().includes(customTheme.name.toLowerCase()) ||
+                  customTheme.sampleTags.some((st) => t.toLowerCase().includes(st.toLowerCase()))
+              ) ||
+              tour.title.toLowerCase().includes(customTheme.name.split('・')[0].toLowerCase())
+            : false;
+
+          if (!isDirectCategoryMatch && !isCustomThemeMatch) {
+            return false;
+          }
         }
 
         // Area
@@ -429,7 +500,7 @@ export function App() {
         if (sortBy === 'price-desc') return b.price - a.price;
         return 0;
       });
-  }, [tours, searchQuery, selectedCategory, selectedArea, selectedLevel, sortBy]);
+  }, [tours, searchQuery, selectedCategory, selectedArea, selectedLevel, sortBy, customThemes]);
 
   // Reset filters
   const handleResetFilters = () => {
@@ -494,18 +565,8 @@ export function App() {
               }}
               onSearch={scrollToExplore}
               openCreateModal={() => setIsCreateModalOpen(true)}
-              onSelectTourById={(tourId) => {
-                const target = findTourByIdOrAlias(tourId);
-                if (target) {
-                  handleSelectTour(target);
-                } else {
-                  scrollToExplore();
-                }
-              }}
-              onTagClick={(tag) => {
-                setSearchQuery(tag.replace('#', ''));
-                scrollToExplore();
-              }}
+              customThemes={customThemes}
+              onAddCustomTheme={handleAddCustomTheme}
             />
 
             {/* Tours Exploration Area */}
@@ -515,6 +576,7 @@ export function App() {
                 selectedCategory={selectedCategory}
                 setSelectedCategory={setSelectedCategory}
                 lang={lang}
+                customThemes={customThemes}
               />
 
               {/* Multi-Filter Bar */}
@@ -740,6 +802,8 @@ export function App() {
         onClose={() => setIsCreateModalOpen(false)}
         lang={lang}
         onTourCreated={handleTourCreated}
+        customThemes={customThemes}
+        onAddCustomTheme={handleAddCustomTheme}
       />
 
       {/* Footer */}

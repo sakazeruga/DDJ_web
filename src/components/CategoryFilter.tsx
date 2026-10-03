@@ -9,23 +9,25 @@ import {
   HeartHandshake,
   Music
 } from 'lucide-react';
-import type { Language, TourCategory } from '../types';
+import type { Language, TourCategory, CustomTheme } from '../types';
 import { translations } from '../i18n/translations';
 
 interface CategoryFilterProps {
   selectedCategory: TourCategory | 'all';
   setSelectedCategory: (cat: TourCategory | 'all') => void;
   lang: Language;
+  customThemes?: CustomTheme[];
 }
 
 export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   selectedCategory,
   setSelectedCategory,
   lang,
+  customThemes = [],
 }) => {
   const t = translations[lang];
 
-  const categories: Array<{ id: TourCategory | 'all'; label: string; icon: React.ReactNode; color: string }> = [
+  const categories: Array<{ id: TourCategory | 'all'; label: string; icon: React.ReactNode; color: string; isCustom?: boolean }> = [
     { id: 'all', label: t.categories.all, icon: <Sparkles className="w-4 h-4" />, color: 'hover:border-blue-500' },
     { id: 'music-sound', label: t.categories['music-sound'], icon: <Music className="w-4 h-4" />, color: 'hover:border-indigo-500' },
     { id: 'history-castle', label: t.categories['history-castle'], icon: <Shield className="w-4 h-4" />, color: 'hover:border-amber-500' },
@@ -34,6 +36,14 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
     { id: 'retro-showa', label: t.categories['retro-showa'], icon: <BookOpen className="w-4 h-4" />, color: 'hover:border-orange-500' },
     { id: 'folklore-yokai', label: t.categories['folklore-yokai'], icon: <Ghost className="w-4 h-4" />, color: 'hover:border-purple-500' },
     { id: 'oshikatsu-subculture', label: t.categories['oshikatsu-subculture'], icon: <HeartHandshake className="w-4 h-4" />, color: 'hover:border-pink-500' },
+    // Dynamic Custom Themes
+    ...customThemes.map((ct) => ({
+      id: ct.categoryKey as TourCategory,
+      label: ct.name,
+      icon: <Sparkles className="w-3.5 h-3.5 text-amber-500" />,
+      color: 'hover:border-amber-500',
+      isCustom: true,
+    })),
   ];
 
   return (
@@ -55,6 +65,13 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                 {cat.icon}
               </span>
               <span>{cat.label}</span>
+              {cat.isCustom && (
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black uppercase tracking-wider ${
+                  isSelected ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+                }`}>
+                  新テーマ
+                </span>
+              )}
             </button>
           );
         })}

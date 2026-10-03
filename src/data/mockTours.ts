@@ -120,6 +120,13 @@ export const INITIAL_TOURS: Tour[] = [
       zoom: 15,
     },
     googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Zushi-Hayama+Station',
+    routeWaypoints: [
+      '逗子・葉山駅',
+      '一色海岸',
+      '日影茶屋',
+      '葉山しおさい公園',
+      '森戸神社',
+    ],
     nearbySpots: [
       {
         id: 'spot-sound-1',
@@ -292,6 +299,13 @@ export const INITIAL_TOURS: Tour[] = [
       zoom: 15,
     },
     googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=%E5%A3%AC%E7%94%9F%E5%AF%BA+%E4%BA%AC%E9%83%BD',
+    routeWaypoints: [
+      '大宮駅 京都',
+      '八木邸 京都',
+      '壬生寺 京都',
+      '池田屋騒動之碑',
+      '油小路通 京都',
+    ],
     nearbySpots: [
       {
         id: 'spot-1-1',
@@ -464,6 +478,12 @@ export const INITIAL_TOURS: Tour[] = [
       zoom: 14,
     },
     googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=%E9%8E%84%E5%80%89%E9%AB%98%E6%A0%A1%E5%89%8D%E9%A7%85+%E6%B1%9F%E3%83%8E%E9%9B%BB',
+    routeWaypoints: [
+      '鎌倉駅',
+      '極楽寺駅',
+      '鎌倉高校前駅',
+      '江ノ島駅',
+    ],
     nearbySpots: [
       {
         id: 'spot-2-1',
@@ -622,6 +642,12 @@ export const INITIAL_TOURS: Tour[] = [
       zoom: 16,
     },
     googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=%E7%A5%9E%E4%BF%9D%E7%94%BA+%E3%81%99%E3%81%9A%E3%82%89%E3%82%93%E9%80%9A%E3%82%8A',
+    routeWaypoints: [
+      '神保町駅',
+      'さぼうる 神保町',
+      '文房堂 神保町',
+      '神保町 すずらん通り',
+    ],
     nearbySpots: [
       {
         id: 'spot-3-1',
@@ -780,6 +806,12 @@ export const INITIAL_TOURS: Tour[] = [
       zoom: 15,
     },
     googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E7%94%B0%E5%8E%9F%E5%9F%8E+%E6%9C%AC%E4%B8%88',
+    routeWaypoints: [
+      '小田原駅',
+      '常盤木門 小田原城',
+      '小田原城天守閣',
+      '御鐘ノ台大堀切西堀',
+    ],
     nearbySpots: [
       {
         id: 'spot-4-1',
@@ -939,6 +971,13 @@ export const INITIAL_TOURS: Tour[] = [
       zoom: 14,
     },
     googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=%E9%A3%9B%E9%A8%84%E5%8F%A4%E5%B7%9D%E9%A7%85+%E8%B7%A8%E7%B7%9A%E6%A9%8B',
+    routeWaypoints: [
+      '高山駅',
+      '飛騨古川駅',
+      '気多若宮神社',
+      '瀬戸川と白壁土蔵街',
+      '味処古川',
+    ],
     nearbySpots: [
       {
         id: 'spot-5-1',
@@ -1098,6 +1137,12 @@ export const INITIAL_TOURS: Tour[] = [
       zoom: 16,
     },
     googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=%E4%B8%8B%E5%8C%97%E6%B2%A2SHELTER',
+    routeWaypoints: [
+      '下北沢駅',
+      '下北沢SHELTER',
+      '本多劇場',
+      '下北沢 BONUS TRACK',
+    ],
     nearbySpots: [
       {
         id: 'spot-6-1',

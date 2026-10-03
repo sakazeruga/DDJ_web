@@ -31,6 +31,7 @@ import confetti from 'canvas-confetti';
 import type { Tour, TourReview, Booking, TalkSessionBooking, Language, NearbySpotCategory, Currency, ItineraryItem } from '../types';
 import { translations } from '../i18n/translations';
 import { formatPrice } from '../utils/currency';
+import { getGoogleMapsWalkingDirectionsUrl, getCleanEmbedQuery } from '../utils/mapRoute';
 import { ShioriShareModal } from './ShioriShareModal';
 import { GuideChatModal } from './GuideChatModal';
 
@@ -118,21 +119,13 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
     ? { lat: currentSpot.lat, lng: currentSpot.lng } 
     : tour.coordinates || { lat: 35.6762, lng: 139.6503 };
 
-  const mapQueryParam = focusedItinerary
-    ? `${encodeURIComponent(focusedItinerary.spotTitle + ' ' + tour.area)}`
-    : currentSpot
-    ? `${encodeURIComponent(currentSpot.googleMapsQuery || currentSpot.name)}`
-    : `${mapCoords.lat},${mapCoords.lng}`;
-
-  const origin = encodeURIComponent(tour.meetingPoint + ' ' + tour.area);
-  const destination = encodeURIComponent(
-    tour.itinerary[tour.itinerary.length - 1]?.spotTitle + ' ' + tour.area
+  const mapQueryParam = getCleanEmbedQuery(
+    focusedItinerary,
+    tour,
+    currentSpot?.googleMapsQuery || currentSpot?.name
   );
-  const waypoints = tour.itinerary
-    .slice(1, -1)
-    .map((item) => encodeURIComponent(item.spotTitle))
-    .join('|');
-  const googleMapsDirectionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypoints ? `&waypoints=${waypoints}` : ''}&travelmode=walking`;
+
+  const googleMapsDirectionsUrl = getGoogleMapsWalkingDirectionsUrl(tour);
 
   const filteredNearbySpots = (tour.nearbySpots || []).filter((spot) => {
     if (nearbyCategory === 'all') return true;
@@ -322,7 +315,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
             {/* Top Badges */}
             <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900/80 text-white backdrop-blur-md border border-white/20">
-                {translations[lang].categories[tour.category] || (lang === 'ja' ? '文化ツアー' : 'Cultural Tour')}
+                {(translations[lang].categories as Record<string, string>)[tour.category] || (lang === 'ja' ? '文化ツアー' : 'Cultural Tour')}
               </span>
               <div className="flex items-center gap-1 text-[11px] text-white bg-slate-900/80 px-2.5 py-0.5 rounded-full backdrop-blur-md border border-white/20">
                 <Languages className="w-3 h-3 text-blue-300" />
@@ -578,8 +571,8 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
 
                         <a
                           href={currentSpot 
-                            ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentSpot.googleMapsQuery)}` 
-                            : tour.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(tour.meetingPoint + ' ' + tour.area)}`}
+                            ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentSpot.googleMapsQuery || currentSpot.name)}` 
+                            : tour.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${mapQueryParam}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold flex items-center gap-1.5 transition-colors"

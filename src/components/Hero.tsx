@@ -1,7 +1,9 @@
-import React from 'react';
-import { Search, MapPin, Star, PlusCircle, Compass, Sparkles, ChevronRight } from 'lucide-react';
-import type { Language, TourCategory } from '../types';
+import React, { useState } from 'react';
+import { Search, MapPin, Star, PlusCircle, Plus, Compass, Sparkles, ChevronRight, Wand2, X, Tag, Check } from 'lucide-react';
+import confetti from 'canvas-confetti';
+import type { Language, TourCategory, CustomTheme } from '../types';
 import { translations } from '../i18n/translations';
+import { classifyTourThemeWithAI, type AIThemeAnalysisResult } from '../utils/aiThemeClassifier';
 
 interface HeroProps {
   lang: Language;
@@ -11,8 +13,8 @@ interface HeroProps {
   setSelectedCategory: (cat: TourCategory | 'all') => void;
   onSearch: () => void;
   openCreateModal: () => void;
-  onTagClick?: (tag: string) => void;
-  onSelectTourById?: (tourId: string) => void;
+  customThemes?: CustomTheme[];
+  onAddCustomTheme?: (newTheme: CustomTheme) => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({
@@ -23,13 +25,62 @@ export const Hero: React.FC<HeroProps> = ({
   setSelectedCategory,
   onSearch,
   openCreateModal,
-  onTagClick: _onTagClick,
-  onSelectTourById,
+  customThemes = [],
+  onAddCustomTheme,
 }) => {
   const t = translations[lang];
 
+  // Quick AI Theme Discovery Modal state
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [aiThemeInput, setAiThemeInput] = useState('');
+  const [isAiThinking, setIsAiThinking] = useState(false);
+  const [aiResult, setAiResult] = useState<AIThemeAnalysisResult | null>(null);
+
+  // Handle Quick AI Theme Analysis from Hero
+  const handleQuickAnalyze = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiThemeInput.trim()) return;
+
+    setIsAiThinking(true);
+    setAiResult(null);
+
+    try {
+      const result = await classifyTourThemeWithAI({
+        title: aiThemeInput,
+        description: aiThemeInput,
+      });
+      setAiResult(result);
+
+      if (result.isMatch && result.matchedCategory) {
+        setSelectedCategory(result.matchedCategory);
+        setSearchQuery('');
+        setIsAiModalOpen(false);
+        onSearch();
+      }
+    } finally {
+      setIsAiThinking(false);
+    }
+  };
+
+  const handleApplyHeroNewTheme = (newTheme: CustomTheme) => {
+    if (onAddCustomTheme) {
+      onAddCustomTheme(newTheme);
+    }
+    setSelectedCategory(newTheme.categoryKey as TourCategory);
+    setSearchQuery('');
+    setIsAiModalOpen(false);
+    setAiThemeInput('');
+    setAiResult(null);
+    confetti({
+      particleCount: 90,
+      spread: 70,
+      origin: { y: 0.5 },
+    });
+    onSearch();
+  };
+
   // Visual Category Quick Chips with Photos (ID-based, safe and direct)
-  const visualChips = [
+  const builtinChips = [
     {
       category: 'music-sound' as TourCategory,
       tourId: 'tour-mottainai-sound',
@@ -66,6 +117,18 @@ export const Hero: React.FC<HeroProps> = ({
       label: lang === 'ja' ? '城郭・要塞' : 'Castle Fortresses',
       img: 'https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=200&q=80',
     },
+  ];
+
+  // Combine builtin and custom themes for Hero visual chips
+  const allChips = [
+    ...builtinChips,
+    ...customThemes.map((ct) => ({
+      category: ct.categoryKey as TourCategory,
+      tourId: ct.id,
+      label: ct.name,
+      img: ct.imageUrl || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=200&q=80',
+      isCustom: true,
+    })),
   ];
 
   return (
@@ -186,18 +249,14 @@ export const Hero: React.FC<HeroProps> = ({
 
             {/* Horizontal Scrollable Photo Chips */}
             <div className="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar">
-              {visualChips.map((chip, idx) => (
+              {allChips.map((chip, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => {
                     setSelectedCategory(chip.category);
                     setSearchQuery('');
-                    if (onSelectTourById) {
-                      onSelectTourById(chip.tourId);
-                    } else {
-                      onSearch();
-                    }
+                    onSearch();
                   }}
                   className="group flex items-center gap-2.5 pl-1.5 pr-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 transition-all cursor-pointer flex-shrink-0 active:scale-95 shadow-sm"
                 >
@@ -209,10 +268,128 @@ export const Hero: React.FC<HeroProps> = ({
                   <span className="text-xs font-bold text-white whitespace-nowrap">
                     {chip.label}
                   </span>
+                  {'isCustom' in chip && (
+                    <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded-full">
+                      新タグ
+                    </span>
+                  )}
                 </button>
               ))}
+
+              {/* Quick AI Theme Discovery Button */}
+              <button
+                type="button"
+                onClick={() => setIsAiModalOpen(true)}
+                className="group flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-blue-600/80 to-indigo-600/80 hover:from-blue-600 hover:to-indigo-600 backdrop-blur-md border border-blue-400/40 text-white text-xs font-bold transition-all cursor-pointer flex-shrink-0 active:scale-95 shadow-sm"
+              >
+                <Wand2 className="w-3.5 h-3.5 text-yellow-300 group-hover:rotate-12 transition-transform" />
+                <span>＋ AIテーマ判定・新タグ追加</span>
+              </button>
             </div>
           </div>
+
+          {/* Quick AI Theme Discovery Modal */}
+          {isAiModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+              <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 text-slate-900 border border-slate-200 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/30">
+                      <Wand2 className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-black text-slate-900 leading-tight">
+                        ✨ AIテーマタグ判定・新タグ新設
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        探したい切り口を入力するとAIが既存テーマと照合。非該当なら新テーマタグを追加できます！
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setIsAiModalOpen(false); setAiResult(null); }}
+                    className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleQuickAnalyze} className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      どんなテーマ・切り口のツアーを探したいですか？
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={aiThemeInput}
+                        onChange={(e) => setAiThemeInput(e.target.value)}
+                        placeholder="例: 近代化遺産・廃墟 / 銭湯サウナ / 地質断層 / 伝統酒蔵 / 昭和歌謡..."
+                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
+                        autoFocus
+                      />
+                      <button
+                        type="submit"
+                        disabled={isAiThinking || !aiThemeInput.trim()}
+                        className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/30 transition-all cursor-pointer disabled:opacity-50 active:scale-95 flex items-center gap-1.5 flex-shrink-0"
+                      >
+                        <Wand2 className={`w-3.5 h-3.5 ${isAiThinking ? 'animate-spin' : ''}`} />
+                        <span>{isAiThinking ? '判定中...' : 'AI判定'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+
+                {/* AI Result Card */}
+                {aiResult && (
+                  <div className={`p-4 rounded-2xl border text-xs ${
+                    aiResult.isMatch 
+                      ? 'bg-blue-50 border-blue-200 text-blue-900' 
+                      : 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-300 text-amber-950'
+                  }`}>
+                    {aiResult.isMatch ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 font-black text-blue-800">
+                          <Check className="w-4 h-4 text-blue-600" />
+                          <span>既存テーマ「{aiResult.matchedCategoryName}」に合致しました！</span>
+                        </div>
+                        <p className="text-slate-600">{aiResult.explanation}</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 font-black text-amber-900">
+                          <Sparkles className="w-4 h-4 text-amber-600 animate-pulse" />
+                          <span>⚡ 既存テーマに非該当（新ジャンル発見！）</span>
+                        </div>
+                        <p className="text-slate-700 leading-relaxed">{aiResult.explanation}</p>
+                        
+                        {aiResult.suggestedNewTheme && (
+                          <div className="bg-white p-3 rounded-xl border border-amber-200 flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                              <Tag className="w-4 h-4 text-amber-600" />
+                              <span className="font-bold text-slate-900">新テーマタグ:</span>
+                              <span className="font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+                                🏷️ {aiResult.suggestedNewTheme.name}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleApplyHeroNewTheme(aiResult.suggestedNewTheme!)}
+                              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold text-xs hover:from-amber-700 hover:to-orange-700 shadow-sm transition-all cursor-pointer active:scale-95 flex items-center gap-1"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>DDJに追加して探す</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Compact Trust Stats Row */}
           <div className="pt-2 flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-slate-300 font-medium">
