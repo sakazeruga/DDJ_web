@@ -186,13 +186,29 @@ export function App() {
     }
   };
 
+  // Helper: Find tour by ID or alias safely
+  const findTourByIdOrAlias = (param: string) => {
+    const p = param.trim().toLowerCase();
+    return tours.find((t) => {
+      const id = t.id.toLowerCase();
+      return (
+        id === p ||
+        id === `tour-${p}` ||
+        (p === 'tour-7' && id === 'tour-mottainai-sound') ||
+        (p === '7' && id === 'tour-mottainai-sound') ||
+        (p === 'mottainai' && id.includes('mottainai')) ||
+        (p === 'shinsengumi' && id === 'tour-1')
+      );
+    });
+  };
+
   // Deep-link check on initial mount or when tours are loaded
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
-      const tourParam = params.get('tour');
+      const tourParam = params.get('tour') || params.get('id');
       if (tourParam) {
-        const found = tours.find((t) => t.id === tourParam);
+        const found = findTourByIdOrAlias(tourParam);
         if (found) {
           setSelectedTour(found);
         }
@@ -207,9 +223,9 @@ export function App() {
     const handlePopState = () => {
       try {
         const params = new URLSearchParams(window.location.search);
-        const tourParam = params.get('tour');
+        const tourParam = params.get('tour') || params.get('id');
         if (tourParam) {
-          const found = tours.find((t) => t.id === tourParam);
+          const found = findTourByIdOrAlias(tourParam);
           setSelectedTour(found || null);
         } else {
           setSelectedTour(null);
@@ -424,6 +440,14 @@ export function App() {
               }}
               onSearch={scrollToExplore}
               openCreateModal={() => setIsCreateModalOpen(true)}
+              onSelectTourById={(tourId) => {
+                const target = findTourByIdOrAlias(tourId);
+                if (target) {
+                  handleSelectTour(target);
+                } else {
+                  scrollToExplore();
+                }
+              }}
               onTagClick={(tag) => {
                 setSearchQuery(tag.replace('#', ''));
                 scrollToExplore();

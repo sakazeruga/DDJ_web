@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import type { Tour, Language, NearbySpotCategory, NearbySpot, Currency, ItineraryItem } from '../types';
 import { formatPrice } from '../utils/currency';
+import { translations } from '../i18n/translations';
 
 interface InteractiveMapViewProps {
   tours: Tour[];
@@ -197,7 +198,7 @@ export const InteractiveMapView: React.FC<InteractiveMapViewProps> = ({
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2.5">
             <div className="flex items-center justify-between gap-2">
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
-                {lang === 'ja' ? activeTour.tags[0] || '偏愛ツアー' : activeTour.category}
+                {translations[lang].categories[activeTour.category] || (lang === 'ja' ? '偏愛ツアー' : 'Niche Tour')}
               </span>
               <div className="flex items-center gap-2 text-xs font-medium">
                 <span className="font-black text-blue-600 text-sm">

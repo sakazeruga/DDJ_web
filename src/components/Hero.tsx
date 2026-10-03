@@ -11,7 +11,8 @@ interface HeroProps {
   setSelectedCategory: (cat: TourCategory | 'all') => void;
   onSearch: () => void;
   openCreateModal: () => void;
-  onTagClick: (tag: string) => void;
+  onTagClick?: (tag: string) => void;
+  onSelectTourById?: (tourId: string) => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({
@@ -22,47 +23,48 @@ export const Hero: React.FC<HeroProps> = ({
   setSelectedCategory,
   onSearch,
   openCreateModal,
-  onTagClick,
+  onTagClick: _onTagClick,
+  onSelectTourById,
 }) => {
   const t = translations[lang];
 
-  // Visual Category Quick Chips with Photos
+  // Visual Category Quick Chips with Photos (ID-based, safe and direct)
   const visualChips = [
     {
       category: 'music-sound' as TourCategory,
+      tourId: 'tour-mottainai-sound',
       label: lang === 'ja' ? '音楽・音風景' : 'Music & Sound',
       img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=200&q=80',
-      tag: '#MOTTAINAI SOUND',
     },
     {
       category: 'history-castle' as TourCategory,
+      tourId: 'tour-1',
       label: lang === 'ja' ? '歴史・幕末' : 'History & Samurai',
       img: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=200&q=80',
-      tag: '#新選組・京都幕末',
     },
     {
       category: 'railway-train' as TourCategory,
+      tourId: 'tour-2',
       label: lang === 'ja' ? '鉄道・江ノ電' : 'Railways & Trams',
       img: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=200&q=80',
-      tag: '#江ノ電・絶景鉄道',
     },
     {
       category: 'anime-pilgrimage' as TourCategory,
+      tourId: 'tour-6',
       label: lang === 'ja' ? 'アニメ聖地' : 'Anime Pilgrimage',
       img: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=200&q=80',
-      tag: '#ぼっち・ざ・ろっく！',
     },
     {
       category: 'retro-showa' as TourCategory,
+      tourId: 'tour-3',
       label: lang === 'ja' ? '昭和レトロ・古書' : 'Retro & Bookshops',
       img: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=200&q=80',
-      tag: '#神保町・古書店＆喫茶',
     },
     {
       category: 'history-castle' as TourCategory,
+      tourId: 'tour-4',
       label: lang === 'ja' ? '城郭・要塞' : 'Castle Fortresses',
       img: 'https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=200&q=80',
-      tag: '#小田原城・総構え',
     },
   ];
 
@@ -190,7 +192,12 @@ export const Hero: React.FC<HeroProps> = ({
                   type="button"
                   onClick={() => {
                     setSelectedCategory(chip.category);
-                    onTagClick(chip.tag);
+                    setSearchQuery('');
+                    if (onSelectTourById) {
+                      onSelectTourById(chip.tourId);
+                    } else {
+                      onSearch();
+                    }
                   }}
                   className="group flex items-center gap-2.5 pl-1.5 pr-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 transition-all cursor-pointer flex-shrink-0 active:scale-95 shadow-sm"
                 >

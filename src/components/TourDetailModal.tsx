@@ -260,7 +260,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
             {/* Top Badges */}
             <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900/80 text-white backdrop-blur-md border border-white/20">
-                {lang === 'ja' ? tour.tags[0] || '文化ツアー' : tour.category}
+                {translations[lang].categories[tour.category] || (lang === 'ja' ? '文化ツアー' : 'Cultural Tour')}
               </span>
               <div className="flex items-center gap-1 text-[11px] text-white bg-slate-900/80 px-2.5 py-0.5 rounded-full backdrop-blur-md border border-white/20">
                 <Languages className="w-3 h-3 text-blue-300" />
@@ -273,7 +273,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
           <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xs space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold text-blue-700">
               <span className="px-2 py-0.5 rounded-md bg-blue-50 border border-blue-200 font-mono text-[11px]">
-                DDJ-TOUR #{tour.id.toUpperCase()}
+                DDJ-TOUR #{tour.id.replace('tour-', '').toUpperCase()}
               </span>
               <span className="text-slate-300">|</span>
               <span className="text-slate-600 flex items-center gap-1 text-xs">
