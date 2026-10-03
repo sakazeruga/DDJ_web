@@ -31,7 +31,7 @@ export const RequestBoardView: React.FC<RequestBoardViewProps> = ({
   const [title, setTitle] = useState('');
   const [targetAnime, setTargetAnime] = useState('');
   const [area, setArea] = useState('');
-  const [budget, setBudget] = useState(8000);
+  const [budget, setBudget] = useState<number | ''>(8000);
   const [details, setDetails] = useState('');
   const [userName, setUserName] = useState('');
   const [desiredDate, setDesiredDate] = useState(() => {
@@ -50,7 +50,7 @@ export const RequestBoardView: React.FC<RequestBoardViewProps> = ({
       userName: userName || '匿名旅行者',
       targetAnimeOrTheme: targetAnime,
       area: area || '全国',
-      budget: Number(budget),
+      budget: Number(budget) || 8000,
       details,
       desiredDate,
     });
@@ -231,9 +231,18 @@ export const RequestBoardView: React.FC<RequestBoardViewProps> = ({
                     <label className="block text-xs font-bold text-slate-700 mb-1">希望予算（円）</label>
                     <input
                       type="number"
-                      step="500"
+                      step="1"
+                      min="0"
                       value={budget}
-                      onChange={(e) => setBudget(Number(e.target.value))}
+                      placeholder="8000"
+                      onFocus={(e) => e.target.select()}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setBudget(val === '' ? '' : Number(val));
+                      }}
+                      onBlur={() => {
+                        if (budget === '' || Number(budget) < 0) setBudget(8000);
+                      }}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
                     />
                   </div>

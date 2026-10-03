@@ -45,9 +45,9 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   const [category, setCategory] = useState<TourCategory>('history-castle');
   const [area, setArea] = useState('');
   const [otakuLevel, setOtakuLevel] = useState<1 | 2 | 3 | 4 | 5>(3);
-  const [durationHours, setDurationHours] = useState<number>(3.5);
-  const [price, setPrice] = useState<number>(6500);
-  const [maxParticipants, setMaxParticipants] = useState<number>(6);
+  const [durationHours, setDurationHours] = useState<number | ''>(3.5);
+  const [price, setPrice] = useState<number | ''>(6500);
+  const [maxParticipants, setMaxParticipants] = useState<number | ''>(6);
   const [languagesInput, setLanguagesInput] = useState<string>('日本語, English');
   const [imageUrl, setImageUrl] = useState<string>(
     'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80'
@@ -67,12 +67,12 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   const [meetingPoint, setMeetingPoint] = useState('');
   const [guideName, setGuideName] = useState('ガイド');
   const [guideBio, setGuideBio] = useState('この歴史と街並みが大好きで10年通っています！');
-  const [guideYears, setGuideYears] = useState<number>(10);
+  const [guideYears, setGuideYears] = useState<number | ''>(10);
 
   // Online Talk Session configuration states
   const [enableTalkSession, setEnableTalkSession] = useState(true);
-  const [talkPrice30m, setTalkPrice30m] = useState(3000);
-  const [talkPrice60m, setTalkPrice60m] = useState(5500);
+  const [talkPrice30m, setTalkPrice30m] = useState<number | ''>(3000);
+  const [talkPrice60m, setTalkPrice60m] = useState<number | ''>(5500);
   const [talkTopicsInput, setTalkTopicsInput] = useState('事前作戦会議・ルート相談, マニアック機材・書籍相談, 自由オタクトーク');
 
   // Dynamic itinerary stops with unique stable IDs
@@ -183,9 +183,26 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
     });
   };
 
+  // Extract key topic/work title from user's tour title
+  const extractKeyTopic = (rawTitle: string, defaultTopic: string = '作品・テーマ'): string => {
+    if (!rawTitle) return defaultTopic;
+    const bracketMatch = rawTitle.match(/[『「【](.+?)[』」】]/);
+    if (bracketMatch && bracketMatch[1]) {
+      return bracketMatch[1].trim();
+    }
+    const parts = rawTitle.split(/[・/:\s|｜―〜-]/).map((s) => s.trim()).filter(Boolean);
+    if (parts.length > 0 && parts[0].length >= 2) {
+      return parts[0];
+    }
+    return rawTitle.slice(0, 15);
+  };
+
   // AI-generated itinerary tailored to current theme/title
   const generateItineraryWithAI = () => {
     const context = `${title} ${description} ${category} ${area}`.toLowerCase();
+    const keyTopic = extractKeyTopic(title, area || '探訪テーマ');
+    const targetArea = area || '現地';
+
     const wrapWithIds = (rawItems: Array<Omit<EditableItineraryItem, 'id'>>): EditableItineraryItem[] => {
       const now = Date.now();
       return rawItems.map((item, idx) => ({
@@ -194,47 +211,294 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
       }));
     };
 
-    if (context.includes('音') || context.includes('音楽') || context.includes('sound') || category === 'music-sound') {
+    // 1. アニメ・漫画・聖地巡礼
+    if (
+      category === 'anime-pilgrimage' ||
+      context.includes('アニメ') ||
+      context.includes('聖地') ||
+      context.includes('漫画') ||
+      context.includes('作中') ||
+      context.includes('巡礼') ||
+      context.includes('コミケ') ||
+      context.includes('コスプレ')
+    ) {
       setItinerary(wrapWithIds([
         {
           time: '10:00',
-          spotTitle: '集合場所にて合流＆ハイレゾレコーダー操作レクチャー',
+          spotTitle: `${targetArea}集合＆聖地巡礼マップ・カット対照シート配布`,
+          spotTitleEn: 'Meeting & Pilgrimage Scene Comparison Sheet Briefing',
+          description: `『${keyTopic}』の作中登場シーンと現地の画角・レンズ焦点距離の一致ポイントを事前レクチャー。マナーを守った聖地探訪の心得を共有。`,
+          descriptionEn: 'Scene comparison sheet handout and angle briefing for respectful pilgrimage photography.',
+          isDeepSpot: false,
+        },
+        {
+          time: '11:15',
+          spotTitle: `『${keyTopic}』キービジュアル＆OP登場カット完全再現スポット`,
+          spotTitleEn: 'Key Visual & OP Cut Exact Frame Reproduction Spot',
+          description: 'ファンの間でも特定難易度が高いとされる画角から、作中の光の差し込みや背景ビル・坂道のパースを完全一致で撮影検証。',
+          descriptionEn: 'Mastering the exact camera height and sunlight angle from the iconic opening scene.',
+          isDeepSpot: true,
+        },
+        {
+          time: '13:00',
+          spotTitle: '作中モデル喫茶・聖地巡礼ノート記帳＆限定コラボ再現ランチ',
+          spotTitleEn: 'Model Cafe Rest, Fan Pilgrimage Notebook & Themed Lunch',
+          description: '主人公たちが立ち寄ったとされる老舗喫茶にて同じメニューを注文。歴代ファンが紡いできた巡礼ノートに今日の思い出を記帳。',
+          descriptionEn: 'Sampling the exact menu item featured in the series and leaving a heartfelt entry in the guest notebook.',
+          isDeepSpot: false,
+        },
+        {
+          time: '14:45',
+          spotTitle: '物語クライマックスの舞台・黄昏時の名シーン鑑賞＆現地解散',
+          spotTitleEn: 'Climax Narrative Backdrop at Golden Hour & Farewell',
+          description: '作中のエモーショナルな名セリフが生まれた夕景のスポットで締めくくり。参加者同士で胸熱な考察を語り合って解散。',
+          descriptionEn: 'Standing at the pivotal climax location under the evening glow, sharing passionate story theories.',
+          isDeepSpot: true,
+        },
+      ]));
+    }
+    // 2. 昭和レトロ・古書店・純喫茶
+    else if (
+      category === 'retro-showa' ||
+      context.includes('昭和') ||
+      context.includes('レトロ') ||
+      context.includes('純喫茶') ||
+      context.includes('古書') ||
+      context.includes('古本') ||
+      context.includes('名曲喫茶') ||
+      context.includes('レコード')
+    ) {
+      setItinerary(wrapWithIds([
+        {
+          time: '09:45',
+          spotTitle: `${targetArea}駅集合・昭和看板建築＆街並み変遷ガイダンス`,
+          spotTitleEn: 'Meeting & Showa Signboard Architecture Orientation',
+          description: `銅板葺きの看板建築やモルタル装飾など、昭和の職人が遺した意匠の見どころを古地図と照らし合わせて解説。`,
+          descriptionEn: 'Comparing pre-war architectural ornaments and copper sign facades with historic map sheets.',
+          isDeepSpot: false,
+        },
+        {
+          time: '10:30',
+          spotTitle: '創業半世紀の老舗純喫茶モーニング（銅製マグと厚切りトースト）',
+          spotTitleEn: 'Historic Pure Cafe Morning (Copper Mug Coffee & Thick Toast)',
+          description: 'ネルドリップの芳醇な珈琲と名物メニューを味わいながら、マスターから街の変遷と当時の文化人の逸話を聞く。',
+          descriptionEn: 'Velvety flannel-drip coffee served in ice-cold hammered copper mugs alongside nostalgic local lore.',
+          isDeepSpot: true,
+        },
+        {
+          time: '12:30',
+          spotTitle: '路地裏古書店街・絶版サブカル本＆稀覯本ディグりツアー',
+          spotTitleEn: 'Alleyway Antiquarian Bookshops & Rare Subculture Digging',
+          description: '普通は通り過ぎてしまう極小古書店の奥棚から、昭和カルチャー誌や初版本・豆本を発掘する極意を案内。',
+          descriptionEn: 'Unearthing out-of-print subculture magazines and vintage first editions in hidden bookstore stacks.',
+          isDeepSpot: true,
+        },
+        {
+          time: '15:00',
+          spotTitle: '名曲喫茶の巨大蓄音機・真空管アンプ鑑賞＆戦利品読書会',
+          spotTitleEn: 'Meikyoku Audio Lounge, Vacuum Tube Warmth & Reading Wrap-up',
+          description: '重厚な木製スピーカーから流れるクラシックやジャズの生音に身を委ね、今日購入した本を開いて語り合う至福の時間。',
+          descriptionEn: 'Immersing in vintage vacuum tube acoustics while leafing through today\'s curated vintage discoveries.',
+          isDeepSpot: false,
+        },
+      ]));
+    }
+    // 3. 推し活・アイドル・サブカル
+    else if (
+      category === 'oshikatsu-subculture' ||
+      context.includes('推し') ||
+      context.includes('アイドル') ||
+      context.includes('サブカル') ||
+      context.includes('オタク') ||
+      context.includes('アキバ') ||
+      context.includes('中野') ||
+      context.includes('アクスタ') ||
+      context.includes('同人')
+    ) {
+      setItinerary(wrapWithIds([
+        {
+          time: '11:00',
+          spotTitle: `${targetArea}集合＆本日のオタ活・遠征マップ作戦会議`,
+          spotTitleEn: 'Meeting & Subculture Hunt Strategy Briefing',
+          description: `『${keyTopic}』の限定グッズ在庫状況や掘り出し物ビルの回る順序をガイドが綿密にプランニング。`,
+          descriptionEn: 'Optimizing today\'s shop crawl route for rare items, capsule toys, and limited edition drops.',
+          isDeepSpot: false,
+        },
+        {
+          time: '12:00',
+          spotTitle: '一見さんお断り級の雑居ビル・超ディープな中古レア品フロア巡り',
+          spotTitleEn: 'Hidden Multi-tenant Building & Hard-to-Find Collectibles Den',
+          description: 'ネットではプレミア価格がついた絶版グッズや生写真、同人誌が眠る穴場ショップをガイド同伴で潜入探索。',
+          descriptionEn: 'Navigating maze-like back alleys to unearth rare figurines, vintage idol goods, and collector gems.',
+          isDeepSpot: true,
+        },
+        {
+          time: '14:00',
+          spotTitle: '推し色カスタムカフェ＆アクスタ・ぬい専用撮影ブース体験',
+          spotTitleEn: 'Oshi-Color Custom Drink & Acrylic Stand Photo Shootout',
+          description: '推しのイメージカラーに合わせた特製ドリンクを片手に、ミニチュア背景が充実した専用ブースで記念撮影。',
+          descriptionEn: 'Coordinating photo ops for acrylic stands and plushies with vibrant color-matched beverages.',
+          isDeepSpot: false,
+        },
+        {
+          time: '16:00',
+          spotTitle: 'オタク専用コミュニティラウンジにて戦利品開封の儀＆布教解散',
+          spotTitleEn: 'Loot Unboxing Ceremony, Passionate Presentation & Farewell',
+          description: '今日手に入れた推しグッズを並べて熱く語り合い、互いの「推し愛」を称え合う最高潮のエンディング。',
+          descriptionEn: 'Sharing today\'s prize haul with fellow superfans, exchanging deep trivia and mutual love.',
+          isDeepSpot: true,
+        },
+      ]));
+    }
+    // 4. 妖怪・怪談・民俗伝承
+    else if (
+      category === 'folklore-yokai' ||
+      context.includes('妖怪') ||
+      context.includes('怪談') ||
+      context.includes('民俗') ||
+      context.includes('神話') ||
+      context.includes('伝承') ||
+      context.includes('奇祭') ||
+      context.includes('もののけ') ||
+      context.includes('結界') ||
+      context.includes('異界')
+    ) {
+      setItinerary(wrapWithIds([
+        {
+          time: '13:30',
+          spotTitle: `${targetArea}集合・結界の境界と異界伝承オリエンテーション`,
+          spotTitleEn: 'Meeting & Folklore Boundary Legends Orientation',
+          description: `この土地に伝わる古文書や怪異譚を広げ、日常と異界の境界線がどこに引かれていたのかを紐解く。`,
+          descriptionEn: 'Unraveling boundary stones, taboo zones, and centuries-old local spirit lore.',
+          isDeepSpot: false,
+        },
+        {
+          time: '14:30',
+          spotTitle: '妖怪のモデルとなった禁足地・古い祠と名もなき石碑群の探索',
+          spotTitleEn: 'Forbidden Grove, Mysterious Yokai Shrine & Unmarked Stelae',
+          description: '現代の地図からは消えた旧街道の分かれ道に残る道祖神や、かつて畏れられた祠の碑文をガイドが解読。',
+          descriptionEn: 'Deciphering ancient stone carvings dedicated to pacifying capricious regional spirits.',
+          isDeepSpot: true,
+        },
+        {
+          time: '16:15',
+          spotTitle: '語り部の茶屋にて郷土菓子と怪奇民話の生語り鑑賞',
+          spotTitleEn: 'Storyteller Teahouse: Traditional Confection & Spoken Folk Tales',
+          description: '素朴な地元のお茶と菓子を味わいながら、土地の長老や語り部が口伝で残してきた生々しい伝承に聞き入る。',
+          descriptionEn: 'Intimate storytelling session by an elder, narrating spine-chilling oral history over green tea.',
+          isDeepSpot: false,
+        },
+        {
+          time: '17:45',
+          spotTitle: '黄昏の逢魔が時・百鬼夜行の通り道フィールドワーク＆解散',
+          spotTitleEn: 'Twilight Witching Hour Field Walk & Boundary Farewell',
+          description: '昼と夜が入れ替わる最も神秘的な時刻に、伝承の舞台となった坂道や辻に立ち、歴史の影を体感して解散。',
+          descriptionEn: 'Experiencing the eerie beauty of the fading daylight along historic spiritual crossroads.',
+          isDeepSpot: true,
+        },
+      ]));
+    }
+    // 5. 音楽・音風景・MOTTAINAI SOUND
+    else if (
+      category === 'music-sound' ||
+      context.includes('音') ||
+      context.includes('音楽') ||
+      context.includes('sound') ||
+      context.includes('バイノーラル')
+    ) {
+      setItinerary(wrapWithIds([
+        {
+          time: '10:00',
+          spotTitle: `${targetArea}集合＆ハイレゾレコーダー操作・バイノーラル集音レクチャー`,
           spotTitleEn: 'Meeting & Audio Equipment Briefing',
-          description: 'バイノーラルマイクと高性能ポータブルレコーダーのセッティングと集音のコツを解説。',
+          description: 'バイノーラルマイクと高性能ポータブルレコーダーのセッティングと、微細な環境音を捉える耳のチューニングを解説。',
           descriptionEn: 'Setting up high-res mics and binaural listening gear.',
           isDeepSpot: false,
         },
         {
           time: '11:00',
-          spotTitle: '渚の潮騒と小石の擦れる音のフィールドレコーディング',
-          spotTitleEn: 'Coastal Wave & Pebble Sound Field Recording',
-          description: '波が引く瞬間の小石が奏でる繊細なハーモニーを静寂の中で耳を澄ましてサンプリング。',
-          descriptionEn: 'Sampling delicate wave textures and sea breezes.',
+          spotTitle: `${targetArea}の風音・水音・足音のフィールドレコーディング`,
+          spotTitleEn: 'Field Recording: Wind, Water & Ambient Soundscapes',
+          description: '風に擦れる木々の葉音、石畳の反響音、水滴の残響など、普段聞き逃している繊細な音のテクスチャをサンプリング。',
+          descriptionEn: 'Sampling delicate natural textures and historic reverberations.',
           isDeepSpot: true,
         },
         {
           time: '13:00',
-          spotTitle: '竹林の風音と日本庭園の水琴窟探訪',
-          spotTitleEn: 'Bamboo Forest Wind & Suikinkutsu Water Bells',
-          description: '風に擦れる竹の葉音と、地中深くから反響する天然の水滴音をじっくり採集。',
-          descriptionEn: 'Capturing subterranean water chimes and whispering bamboo groves.',
+          spotTitle: '水琴窟または暗渠の反響音が響く隠れスポット探訪',
+          spotTitleEn: 'Hidden Underground Echo Chamber & Suikinkutsu Water Bells',
+          description: '地中深くから反響する天然の水滴音や、街の下を流れる水路の共鳴を静寂の中でじっくり採集。',
+          descriptionEn: 'Capturing subterranean water chimes and whispering acoustic enclosures.',
           isDeepSpot: true,
         },
         {
           time: '15:30',
-          spotTitle: '海辺のスタジオにて採集音源とピアノのコラボ即興セッション＆解散',
-          spotTitleEn: 'Studio Listening & Piano Jam Session',
-          description: '今日録音したばかりの波音や自然音にガイドがピアノの旋律を重ね、オリジナル音源を共有。',
-          descriptionEn: 'Synthesizing captured sounds with live acoustic piano music.',
+          spotTitle: 'リスニングルームにて採集音源とアコースティック即興セッション＆解散',
+          spotTitleEn: 'Studio Listening & Acoustic Jam Session',
+          description: '今日録音したばかりの環境音にガイドが旋律を重ね、参加者全員でひとつの音響作品として完成させて音源データを共有。',
+          descriptionEn: 'Synthesizing captured sounds with live acoustic music and exporting master audio tracks.',
           isDeepSpot: true,
         },
       ]));
-    } else if (context.includes('廃墟') || context.includes('産業') || context.includes('遺産') || context.includes('鉱山')) {
+    }
+    // 6. 鉄道・秘境駅・レトロ車両
+    else if (
+      category === 'railway-train' ||
+      context.includes('鉄道') ||
+      context.includes('江ノ電') ||
+      context.includes('駅') ||
+      context.includes('電車') ||
+      context.includes('廃線')
+    ) {
+      setItinerary(wrapWithIds([
+        {
+          time: '09:45',
+          spotTitle: `${targetArea}駅集合＆1日乗車券・ダイヤグラム時刻表読み解きレクチャー`,
+          spotTitleEn: 'Meeting & Single-Track Railway Schedule Briefing',
+          description: '単線運転の交換ダイヤの仕組みと、おすすめの撮影・鑑賞ポイントを線路平面図で徹底確認。',
+          descriptionEn: 'Single-track railway schedule briefing, passing loop logistics, and line safety etiquette.',
+          isDeepSpot: false,
+        },
+        {
+          time: '10:30',
+          spotTitle: '民家の軒先スレスレを通過する迫力の併用軌道・路面区間探訪',
+          spotTitleEn: 'Narrow Street Promenade & Street Running Tramway',
+          description: '家屋の庇と車体が数センチの至近距離をすり抜ける名物区間を、安全なベストポジションで体感。',
+          descriptionEn: 'Thrilling residential tramway skimming between traditional shop eaves.',
+          isDeepSpot: true,
+        },
+        {
+          time: '12:30',
+          spotTitle: '海・山を臨む単線駅・スプリングポイント転換音とすれ違い退避の鑑賞',
+          spotTitleEn: 'Scenic Passing Station & Switch Track Mechanism Observation',
+          description: 'スプリングポイントの転換金属音や通票閉塞機の面影など、鉄道ファン垂涎の機構を解説。',
+          descriptionEn: 'Watching train crossing operations, point blade clicks, and scenic coastline curves.',
+          isDeepSpot: true,
+        },
+        {
+          time: '15:00',
+          spotTitle: '旧型レトロ車両の保存展示・引退車両の木造内装鑑賞＆解散',
+          spotTitleEn: 'Vintage Rolling Stock Heritage Spot & Farewell',
+          description: '木造ニス塗り床や丸型白熱灯を間近で観察し、鉄道談義で締めくくり。',
+          descriptionEn: 'Admiring classic wooden interiors and distinctive vintage control consoles.',
+          isDeepSpot: false,
+        },
+      ]));
+    }
+    // 7. 廃墟・近代化産業遺産
+    else if (
+      context.includes('廃墟') ||
+      context.includes('産業') ||
+      context.includes('遺産') ||
+      context.includes('鉱山') ||
+      context.includes('炭鉱') ||
+      context.includes('軍艦島')
+    ) {
       setItinerary(wrapWithIds([
         {
           time: '09:30',
-          spotTitle: '駅集合＆近代化遺産ヘルメット・ライト点検',
-          spotTitleEn: 'Gathering & Safety Gear Check',
+          spotTitle: `${targetArea}集合＆近代化遺産ヘルメット・ライト点検`,
+          spotTitleEn: 'Gathering & Industrial Heritage Safety Gear Check',
           description: '安全装備の確認と、この土地がかつて日本の近代産業をどう牽引したかの歴史レクチャー。',
           descriptionEn: 'Safety inspection and industrial heritage orientation.',
           isDeepSpot: false,
@@ -249,8 +513,8 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
         },
         {
           time: '13:00',
-          spotTitle: '旧炭鉱トロッコ軌道跡と封鎖された坑口モニュメント',
-          spotTitleEn: 'Abandoned Mine Trolley Tracks & Sealed Shaft',
+          spotTitle: '旧トロッコ軌道跡と封鎖された坑口モニュメント',
+          spotTitleEn: 'Abandoned Narrow Gauge Tracks & Sealed Mine Shaft',
           description: '木々の間に残る錆びたレールと、地下深くに続いていた坑口の遺構を間近で見学。',
           descriptionEn: 'Rusting narrow-gauge tracks winding through serene woods.',
           isDeepSpot: true,
@@ -259,114 +523,177 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
           time: '15:00',
           spotTitle: '遺構を一望する高台展望地にて振り返り＆解散',
           spotTitleEn: 'Panoramic Viewpoint & Debriefing',
-          description: '廃墟写真のベストアングルを振り返り、現存する資料集を見ながら熱く語り合って解散。',
+          description: '産業遺構写真のベストアングルを振り返り、現存する当時の青写真を見ながら語り合って解散。',
           descriptionEn: 'Reviewing architectural photography and historic blueprints.',
           isDeepSpot: false,
         },
       ]));
-    } else if (context.includes('銭湯') || context.includes('サウナ') || context.includes('温泉')) {
+    }
+    // 8. 銭湯・サウナ・温泉
+    else if (
+      context.includes('銭湯') ||
+      context.includes('サウナ') ||
+      context.includes('温泉') ||
+      context.includes('風呂')
+    ) {
       setItinerary(wrapWithIds([
         {
           time: '13:00',
-          spotTitle: '下町駅集合＆宮造り銭湯の建築鑑賞ブリーフィング',
+          spotTitle: `${targetArea}集合＆宮造り銭湯の破風屋根・煙突鑑賞ブリーフィング`,
           spotTitleEn: 'Meeting & Temple-style Bathhouse Architecture Walk',
-          description: '破風造りの堂々たる屋根や煙突の高さ、番台の配置の歴史的変遷を解説。',
+          description: '破風造りの堂々たる屋根や煙突の高さ、番台の配置の変遷を建築的視点から解説。',
           descriptionEn: 'Exploring historical Miyazukuri wooden architecture and towering brick chimneys.',
           isDeepSpot: false,
         },
         {
           time: '14:00',
-          spotTitle: '富士山ペンキ絵・丸山絵師の壁画鑑賞＆入浴',
-          spotTitleEn: 'Mt. Fuji Mural Viewing & Onsen Bath',
-          description: 'ペンキ絵師の筆遣いを愛でながら、熱湯とバイブラ湯、井戸水かけ流しの水風呂を堪能。',
+          spotTitle: 'ペンキ絵師の富士山壁画鑑賞＆薪沸かしの湯に浸かる極上入浴',
+          spotTitleEn: 'Mt. Fuji Oil Mural Viewing & Mineral-Rich Bathing',
+          description: '名工ペンキ絵師の筆遣いを愛でながら、熱湯とバイブラ湯、地下水かけ流しの水風呂を堪能。',
           descriptionEn: 'Classic Mt. Fuji oil painting appreciation and mineral-rich soaking.',
           isDeepSpot: true,
         },
         {
           time: '16:00',
-          spotTitle: '湯守（店主）の釜場見学＆薪割り・湯沸かし秘話トーク',
+          spotTitle: '湯守（店主）の釜場潜入見学＆薪割り・湯沸かし秘話トーク',
           spotTitleEn: 'Behind-the-Scenes Boiler Room Tour & Firewood Lore',
-          description: '普段は絶対に入れない銭湯の裏側へ。薪で湯を沸かす湯守のこだわりを直接聞く。',
+          description: '普段は絶対に入れない銭湯の心臓部・釜場へ。薪で湯を沸かす湯守のこだわりを直接聞く。',
           descriptionEn: 'Exclusive access to the backroom firewood boiler and master stoker talks.',
           isDeepSpot: true,
         },
         {
           time: '17:30',
-          spotTitle: '湯上がり路地裏純喫茶にてコーヒー牛乳片手に反省会',
+          spotTitle: '湯上がり路地裏純喫茶にて瓶入りコーヒー牛乳片手に反省会＆解散',
           spotTitleEn: 'Post-Bath Retro Cafe & Coffee Milk',
-          description: 'ととのった身体に染み渡る冷たい瓶入りコーヒー牛乳と昭和グルメを堪能。',
+          description: 'ととのった身体に染み渡る冷たい瓶入りコーヒー牛乳と昭和グルメを堪能して解散。',
           descriptionEn: 'Classic glass-bottle coffee milk in a nostalgic Showa cafe alley.',
           isDeepSpot: false,
         },
       ]));
-    } else if (context.includes('鉄道') || context.includes('江ノ電') || category === 'railway-train') {
-      setItinerary(wrapWithIds([
-        {
-          time: '09:45',
-          spotTitle: '駅集合＆1日乗車券購入・撮影マナーレクチャー',
-          spotTitleEn: 'Meeting & 1-Day Pass Preparation',
-          description: '単線運転のダイヤグラムの仕組みと、おすすめの撮影ポイントを地図で確認。',
-          descriptionEn: 'Single-track railway schedule briefing and etiquette.',
-          isDeepSpot: false,
-        },
-        {
-          time: '10:30',
-          spotTitle: '民家の軒先スレスレを走る有名区間・路面併用軌道探訪',
-          spotTitleEn: 'Narrow Street Promenade & Street Running Tram Section',
-          description: '家屋と電車の隙間がわずか数十センチの迫力ある区間を安全なベストポジションで体感。',
-          descriptionEn: 'Thrilling residential tramway skimming between traditional shop eaves.',
-          isDeepSpot: true,
-        },
-        {
-          time: '12:30',
-          spotTitle: '海を臨む単線駅・すれ違い退避の鑑賞',
-          spotTitleEn: 'Oceanview Station Passing Loop Observation',
-          description: 'タブレット交換やスプリングポイントの転換音など、鉄道ファン垂涎の機構を解説。',
-          descriptionEn: 'Watching train crossing operations by the shimmering Pacific coast.',
-          isDeepSpot: true,
-        },
-        {
-          time: '15:00',
-          spotTitle: '旧型レトロ車両の保存展示・引退車両の面影を巡る',
-          spotTitleEn: 'Vintage Rolling Stock Heritage Spot & Farewell',
-          description: '木造床や丸型ヘッドライトを間近で観察し、鉄道談義で締めくくり。',
-          descriptionEn: 'Admiring classic wooden interiors and distinctive round headlights.',
-          isDeepSpot: false,
-        },
-      ]));
-    } else {
-      // General Culture / History / Custom
+    }
+    // 9. 伝統工芸・職人の技
+    else if (
+      context.includes('工芸') ||
+      context.includes('職人') ||
+      context.includes('手仕事') ||
+      context.includes('組紐') ||
+      context.includes('陶芸') ||
+      context.includes('刀剣') ||
+      context.includes('和紙')
+    ) {
       setItinerary(wrapWithIds([
         {
           time: '10:00',
-          spotTitle: `${area || '現地'}集合・本日の探訪テーマオリエンテーション`,
-          spotTitleEn: 'Meeting & Tour Theme Orientation',
-          description: `${title || 'ツアー'}の歴史的・文化的背景と、一般には知られていないツウな鑑賞ポイントを伝授。`,
-          descriptionEn: 'Background lore and key architectural highlights.',
+          spotTitle: `${targetArea}職人町集合＆道具と素材の美学ミニレクチャー`,
+          spotTitleEn: 'Meeting & Traditional Craft Tools & Material Aesthetics',
+          description: `何世代にもわたって受け継がれてきた道具の形と、選び抜かれた自然素材の特性をじっくり解説。`,
+          descriptionEn: 'Examining century-old hand tools, raw natural pigments, and artisanal materials.',
+          isDeepSpot: false,
+        },
+        {
+          time: '11:00',
+          spotTitle: '創業100年を超える名人工房潜入・手仕事の微細な所作見学',
+          spotTitleEn: 'Behind-the-Scenes Master Artisan Workshop Visit',
+          description: '機械では絶対に真似できないミリ単位の指先の感覚と、息をのむような美しい手仕事の現場を間近で見学。',
+          descriptionEn: 'Witnessing high-precision handcrafting techniques honed over decades of quiet devotion.',
+          isDeepSpot: true,
+        },
+        {
+          time: '13:30',
+          spotTitle: '職人直伝の技法体験ワークショップ＆作品づくり',
+          spotTitleEn: 'Hands-on Craft Workshop with Master Guild Guidance',
+          description: '実際に素材に触れ、職人の手ほどきを受けながら自分だけの特製作品を手仕事で仕上げる。',
+          descriptionEn: 'Crafting a bespoke keepsake under the patient mentorship of master artisans.',
+          isDeepSpot: true,
+        },
+        {
+          time: '15:30',
+          spotTitle: '完成作品のお披露目・職人との茶話会＆解散',
+          spotTitleEn: 'Craft Unveiling, Tea Gathering with the Master & Farewell',
+          description: '仕上がった作品を眺めながら、職人が語るモノづくりへの情熱と未来への伝承について語り合って解散。',
+          descriptionEn: 'Reflecting on traditional aesthetics over local green tea with the craftsperson.',
+          isDeepSpot: false,
+        },
+      ]));
+    }
+    // 10. 歴史・城郭・古戦場
+    else if (
+      category === 'history-castle' ||
+      context.includes('城') ||
+      context.includes('武将') ||
+      context.includes('合戦') ||
+      context.includes('新選組') ||
+      context.includes('幕末') ||
+      context.includes('侍')
+    ) {
+      setItinerary(wrapWithIds([
+        {
+          time: '10:00',
+          spotTitle: `${targetArea}集合・古絵図＆縄張り図読み解きオリエンテーション`,
+          spotTitleEn: 'Meeting & Feudal Map Blueprint Orientation',
+          description: `江戸時代の古絵図や城郭縄張り図を広げ、当時の地形の高低差や防衛ラインの構造を軍事視点で予習。`,
+          descriptionEn: 'Comparing modern city topography with historic feudal defense blueprints.',
           isDeepSpot: false,
         },
         {
           time: '11:15',
-          spotTitle: '第1のディープ探訪スポット（隠された遺構・舞台）',
-          spotTitleEn: 'Hidden Spot & Historical Lore Exploration',
-          description: '観光ガイドブックには載っていない現地ならでのエピソードや撮影アングルを徹底解説。',
-          descriptionEn: 'Unpublished lore and rare photo angles away from tourist crowds.',
+          spotTitle: '一般観光客が素通りする武者返し石垣の刻印＆折邪（折れ）の構造鑑賞',
+          spotTitleEn: 'Overlooked Stone Wall Masonry Glyphs & Defensive Crenels',
+          description: '築城大名の刻印が刻まれた巨石や、敵兵の侵入を阻む死角設計（横矢掛かり）を現場で徹底検証。',
+          descriptionEn: 'Deciphering quarry stonemason insignias and tactical flanking angles.',
           isDeepSpot: true,
         },
         {
           time: '13:00',
-          spotTitle: '地元民御用達のカルチャー休憩スポット',
-          spotTitleEn: 'Authentic Local Cultural Break',
-          description: '長年この街に愛される名店で、土地に根付いた文化や食を味わいながら質問タイム。',
+          spotTitle: '歴史の舞台となった老舗宿場町茶屋で兵糧風名物ランチ休憩',
+          spotTitleEn: 'Historic Post Town Teahouse & Samurai Rations Lunch',
+          description: '街道沿いに残る老舗茶屋で、かつての武士や旅人が愛した伝統食を味わいながら歴史談義。',
+          descriptionEn: 'Sampling traditional traveler fare inside a preserved Edo-period merchant structure.',
+          isDeepSpot: false,
+        },
+        {
+          time: '14:45',
+          spotTitle: '激動の決戦地・武将の最後の陣跡にて激闘の情景を追体験＆解散',
+          spotTitleEn: 'Pivotal Battlefield Ground & Historic Climax Farewell',
+          description: '歴史の歯車が大きく動いた決戦の地で、両軍の布陣と勝敗の分岐点を臨場感たっぷりに語り合って解散。',
+          descriptionEn: 'Standing on the decisive battlefield heights, recounting heroic tactics and turning points.',
+          isDeepSpot: true,
+        },
+      ]));
+    }
+    // 11. その他・特注・多目的カルチャー（タイトルのキーワードをフル活用）
+    else {
+      setItinerary(wrapWithIds([
+        {
+          time: '10:00',
+          spotTitle: `${targetArea}集合・『${keyTopic}』深掘り探訪オリエンテーション`,
+          spotTitleEn: `Meeting & ${keyTopic} Deep-Dive Tour Orientation`,
+          description: `『${keyTopic}』の魅力を120%楽しむための鑑賞ポイントと、本日の特別ルート概要をガイドが解説。`,
+          descriptionEn: `Orientation and curated insider perspectives on ${keyTopic}.`,
+          isDeepSpot: false,
+        },
+        {
+          time: '11:15',
+          spotTitle: `『${keyTopic}』の核心に迫るディープスポット（知られざる舞台）`,
+          spotTitleEn: `Core Insider Highlight of ${keyTopic}`,
+          description: '一般的な観光ガイドブックには載っていない、熱狂的なファンだけが知る特別な見どころや撮影アングルへ。',
+          descriptionEn: 'Unpublished lore, specialized views, and rare photo angles away from tourist crowds.',
+          isDeepSpot: true,
+        },
+        {
+          time: '13:00',
+          spotTitle: `${targetArea}の風情が息づく名店・ローカルカルチャー休憩`,
+          spotTitleEn: 'Authentic Local Cultural Snack & Discussion',
+          description: '長年この街に愛される名店で、土地に根付いた文化や食を味わいながらガイドへの質問＆歓談タイム。',
           descriptionEn: 'Local snack time and open Q&A with the specialist guide.',
           isDeepSpot: false,
         },
         {
           time: '14:45',
-          spotTitle: '旅のクライマックススポット・現地解散',
-          spotTitleEn: 'Climax Landmark & Farewell',
-          description: 'もっとも感情が揺さぶられるハイライトスポットで締めくくり、おすすめ関連書籍を紹介。',
-          descriptionEn: 'Final highlight, closing discussions, and curated book recommendations.',
+          spotTitle: `『${keyTopic}』を愛する仲間とのクライマックス探訪＆現地解散`,
+          spotTitleEn: `Final Landmark Climax & Enthusiast Debriefing`,
+          description: 'もっとも感情が揺さぶられるハイライトスポットで締めくくり、おすすめ関連情報や書籍を紹介して解散。',
+          descriptionEn: 'Final highlight, closing discussions, and curated cultural recommendations.',
           isDeepSpot: true,
         },
       ]));
@@ -548,9 +875,9 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
       area,
       areaEn: area,
       otakuLevel,
-      durationHours: Number(durationHours),
-      price: Number(price),
-      maxParticipants: Number(maxParticipants),
+      durationHours: Number(durationHours) || 3.5,
+      price: Number(price) || 6500,
+      maxParticipants: Number(maxParticipants) || 6,
       languages: languagesInput.split(',').map((s) => s.trim()).filter(Boolean),
       imageUrl,
       gallery: [imageUrl],
@@ -565,7 +892,7 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
         bioEn: guideBio,
         rating: 5.0,
         reviewsCount: 1,
-        otakuYears: Number(guideYears),
+        otakuYears: Number(guideYears) || 5,
         specialties: [category, area],
       },
       itinerary,
@@ -589,8 +916,8 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
       createdAt: new Date().toISOString().split('T')[0],
       talkSessionConfig: enableTalkSession ? {
         enabled: true,
-        price30m: Number(talkPrice30m),
-        price60m: Number(talkPrice60m),
+        price30m: Number(talkPrice30m) || 3000,
+        price60m: Number(talkPrice60m) || 5500,
         topics: talkTopicsInput.split(',').map((s) => s.trim()).filter(Boolean),
         availableSlots: ['平日夜 20:00〜20:30', '休日午後 14:00〜14:30', '休日夜 21:00〜21:30'],
       } : undefined,
@@ -864,10 +1191,18 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                 <input
                   type="number"
                   value={price}
-                  onChange={(e) => setPrice(Number(e.target.value))}
-                  step="500"
+                  step="1"
                   min="0"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
+                  placeholder="6500"
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setPrice(val === '' ? '' : Number(val));
+                  }}
+                  onBlur={() => {
+                    if (price === '' || Number(price) < 0) setPrice(6500);
+                  }}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
                 />
               </div>
 
@@ -878,10 +1213,18 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                 <input
                   type="number"
                   value={durationHours}
-                  onChange={(e) => setDurationHours(Number(e.target.value))}
-                  step="0.5"
-                  min="1"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
+                  step="any"
+                  min="0.5"
+                  placeholder="3.5"
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDurationHours(val === '' ? '' : Number(val));
+                  }}
+                  onBlur={() => {
+                    if (durationHours === '' || Number(durationHours) <= 0) setDurationHours(3.5);
+                  }}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
                 />
               </div>
 
@@ -892,10 +1235,19 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                 <input
                   type="number"
                   value={maxParticipants}
-                  onChange={(e) => setMaxParticipants(Number(e.target.value))}
+                  step="1"
                   min="1"
-                  max="20"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
+                  max="50"
+                  placeholder="6"
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setMaxParticipants(val === '' ? '' : Number(val));
+                  }}
+                  onBlur={() => {
+                    if (maxParticipants === '' || Number(maxParticipants) < 1) setMaxParticipants(6);
+                  }}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
                 />
               </div>
             </div>
@@ -1328,8 +1680,18 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                 <input
                   type="number"
                   value={guideYears}
-                  onChange={(e) => setGuideYears(Number(e.target.value))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
+                  step="1"
+                  min="0"
+                  placeholder="10"
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setGuideYears(val === '' ? '' : Number(val));
+                  }}
+                  onBlur={() => {
+                    if (guideYears === '' || Number(guideYears) < 0) setGuideYears(10);
+                  }}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
                 />
               </div>
               <div>
@@ -1374,8 +1736,18 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                       <input
                         type="number"
                         value={talkPrice30m}
-                        onChange={(e) => setTalkPrice30m(Number(e.target.value))}
-                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-900"
+                        step="1"
+                        min="0"
+                        placeholder="3000"
+                        onFocus={(e) => e.target.select()}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTalkPrice30m(val === '' ? '' : Number(val));
+                        }}
+                        onBlur={() => {
+                          if (talkPrice30m === '' || Number(talkPrice30m) < 0) setTalkPrice30m(3000);
+                        }}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
                       />
                     </div>
                     <div>
@@ -1383,8 +1755,18 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                       <input
                         type="number"
                         value={talkPrice60m}
-                        onChange={(e) => setTalkPrice60m(Number(e.target.value))}
-                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-900"
+                        step="1"
+                        min="0"
+                        placeholder="5500"
+                        onFocus={(e) => e.target.select()}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTalkPrice60m(val === '' ? '' : Number(val));
+                        }}
+                        onBlur={() => {
+                          if (talkPrice60m === '' || Number(talkPrice60m) < 0) setTalkPrice60m(5500);
+                        }}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
                       />
                     </div>
                   </div>
