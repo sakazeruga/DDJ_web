@@ -13,6 +13,7 @@ export const translations = {
       'retro-showa': '昭和レトロ・古書・純喫茶',
       'folklore-yokai': '妖怪・神話・民俗伝承',
       'oshikatsu-subculture': '推し活・ポップカルチャー',
+      'music-sound': '音楽・音風景・MOTTAINAI SOUND',
       custom: '特注・リクエスト',
     },
     nav: {
@@ -188,6 +189,7 @@ export const translations = {
       'retro-showa': 'Retro Showa, Vintage Books & Cafes',
       'folklore-yokai': 'Folklore, Yōkai & Legends',
       'oshikatsu-subculture': 'Oshikatsu & Pop Culture',
+      'music-sound': 'Music, Soundscape & MOTTAINAI SOUND',
       custom: 'Custom & Tailored',
     },
     nav: {

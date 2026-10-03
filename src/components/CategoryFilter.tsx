@@ -6,7 +6,8 @@ import {
   Train, 
   BookOpen, 
   Ghost, 
-  HeartHandshake
+  HeartHandshake,
+  Music
 } from 'lucide-react';
 import type { Language, TourCategory } from '../types';
 import { translations } from '../i18n/translations';
@@ -26,6 +27,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 
   const categories: Array<{ id: TourCategory | 'all'; label: string; icon: React.ReactNode; color: string }> = [
     { id: 'all', label: t.categories.all, icon: <Sparkles className="w-4 h-4" />, color: 'hover:border-blue-500' },
+    { id: 'music-sound', label: t.categories['music-sound'], icon: <Music className="w-4 h-4" />, color: 'hover:border-indigo-500' },
     { id: 'history-castle', label: t.categories['history-castle'], icon: <Shield className="w-4 h-4" />, color: 'hover:border-amber-500' },
     { id: 'railway-train', label: t.categories['railway-train'], icon: <Train className="w-4 h-4" />, color: 'hover:border-emerald-500' },
     { id: 'anime-pilgrimage', label: t.categories['anime-pilgrimage'], icon: <MapPin className="w-4 h-4" />, color: 'hover:border-rose-500' },

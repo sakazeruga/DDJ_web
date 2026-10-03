@@ -5,6 +5,7 @@ export type TourCategory =
   | 'retro-showa'           // 昭和レトロ・古書店・純喫茶
   | 'folklore-yokai'        // 妖怪・神話・民俗伝承
   | 'oshikatsu-subculture'  // 推し活・アイドル・サブカル
+  | 'music-sound'           // 音楽・音風景・フィールドレコーディング（MOTTAINAI SOUND）
   | 'custom';               // 特注・カスタム
 
 export interface TourGuide {

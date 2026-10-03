@@ -49,12 +49,18 @@ export function App() {
   // Tab navigation
   const [currentTab, setCurrentTab] = useState<'explore' | 'requests' | 'mypage'>('explore');
 
-  // Tours state (synced with LocalStorage)
+  // Tours state (synced with LocalStorage and auto-merged with fresh INITIAL_TOURS)
   const [tours, setTours] = useState<Tour[]>(() => {
-    const saved = localStorage.getItem('ddj_cultural_tours_v1');
+    const saved = localStorage.getItem('ddj_cultural_tours_v2');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed: Tour[] = JSON.parse(saved);
+        const existingIds = new Set(parsed.map((t) => t.id));
+        const missing = INITIAL_TOURS.filter((t) => !existingIds.has(t.id));
+        if (missing.length > 0) {
+          return [...missing, ...parsed];
+        }
+        return parsed;
       } catch (e) {
         console.error(e);
       }
@@ -63,15 +69,21 @@ export function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('ddj_cultural_tours_v1', JSON.stringify(tours));
+    localStorage.setItem('ddj_cultural_tours_v2', JSON.stringify(tours));
   }, [tours]);
 
-  // Requests state
+  // Requests state (synced with LocalStorage and auto-merged with fresh INITIAL_REQUESTS)
   const [requests, setRequests] = useState<TourRequest[]>(() => {
-    const saved = localStorage.getItem('ddj_cultural_requests_v1');
+    const saved = localStorage.getItem('ddj_cultural_requests_v2');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed: TourRequest[] = JSON.parse(saved);
+        const existingIds = new Set(parsed.map((r) => r.id));
+        const missing = INITIAL_REQUESTS.filter((r) => !existingIds.has(r.id));
+        if (missing.length > 0) {
+          return [...missing, ...parsed];
+        }
+        return parsed;
       } catch (e) {
         console.error(e);
       }
@@ -80,15 +92,21 @@ export function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('ddj_cultural_requests_v1', JSON.stringify(requests));
+    localStorage.setItem('ddj_cultural_requests_v2', JSON.stringify(requests));
   }, [requests]);
 
-  // Reviews state
+  // Reviews state (synced with LocalStorage and auto-merged with fresh INITIAL_REVIEWS)
   const [reviews, setReviews] = useState<TourReview[]>(() => {
-    const saved = localStorage.getItem('ddj_cultural_reviews_v1');
+    const saved = localStorage.getItem('ddj_cultural_reviews_v2');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed: TourReview[] = JSON.parse(saved);
+        const existingIds = new Set(parsed.map((r) => r.id));
+        const missing = INITIAL_REVIEWS.filter((r) => !existingIds.has(r.id));
+        if (missing.length > 0) {
+          return [...missing, ...parsed];
+        }
+        return parsed;
       } catch (e) {
         console.error(e);
       }
@@ -97,7 +115,7 @@ export function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('ddj_cultural_reviews_v1', JSON.stringify(reviews));
+    localStorage.setItem('ddj_cultural_reviews_v2', JSON.stringify(reviews));
   }, [reviews]);
 
   // Bookings state

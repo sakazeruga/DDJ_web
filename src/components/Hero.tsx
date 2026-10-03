@@ -29,6 +29,12 @@ export const Hero: React.FC<HeroProps> = ({
   // Visual Category Quick Chips with Photos
   const visualChips = [
     {
+      category: 'music-sound' as TourCategory,
+      label: lang === 'ja' ? '音楽・音風景' : 'Music & Sound',
+      img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=200&q=80',
+      tag: '#MOTTAINAI SOUND',
+    },
+    {
       category: 'history-castle' as TourCategory,
       label: lang === 'ja' ? '歴史・幕末' : 'History & Samurai',
       img: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=200&q=80',
