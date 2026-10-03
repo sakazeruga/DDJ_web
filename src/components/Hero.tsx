@@ -115,7 +115,7 @@ export const Hero: React.FC<HeroProps> = ({
       category: 'history-castle' as TourCategory,
       tourId: 'tour-4',
       label: lang === 'ja' ? '城郭・要塞' : 'Castle Fortresses',
-      img: 'https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=200&q=80',
+      img: 'https://images.unsplash.com/photo-1590559899731-a382839e5549?auto=format&fit=crop&w=200&q=80',
     },
   ];
 

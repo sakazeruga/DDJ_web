@@ -75,9 +75,14 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   const [talkPrice60m, setTalkPrice60m] = useState(5500);
   const [talkTopicsInput, setTalkTopicsInput] = useState('事前作戦会議・ルート相談, マニアック機材・書籍相談, 自由オタクトーク');
 
-  // Dynamic itinerary stops
-  const [itinerary, setItinerary] = useState<ItineraryItem[]>([
+  // Dynamic itinerary stops with unique stable IDs
+  interface EditableItineraryItem extends ItineraryItem {
+    id: string;
+  }
+
+  const [itinerary, setItinerary] = useState<EditableItineraryItem[]>([
     {
+      id: 'step-init-1',
       time: '10:00',
       spotTitle: '集合場所にて合流＆ブリーフィング',
       spotTitleEn: 'Meeting & Briefing',
@@ -86,6 +91,7 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
       isDeepSpot: false,
     },
     {
+      id: 'step-init-2',
       time: '11:15',
       spotTitle: 'メイン遺構・名所探訪',
       spotTitleEn: 'Main Spot Exploration',
@@ -94,6 +100,7 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
       isDeepSpot: true,
     },
     {
+      id: 'step-init-3',
       time: '12:30',
       spotTitle: '老舗名店・ローカルスポットで休憩',
       spotTitleEn: 'Local Rest & Refreshments',
@@ -102,6 +109,7 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
       isDeepSpot: false,
     },
     {
+      id: 'step-init-4',
       time: '14:00',
       spotTitle: 'クライマックス深掘りスポット＆現地解散',
       spotTitleEn: 'Climax Spot & Farewell',
@@ -114,9 +122,10 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   const addItineraryStop = () => {
     const nextHour = 10 + itinerary.length;
     const timeStr = `${nextHour.toString().padStart(2, '0')}:00`;
-    setItinerary([
-      ...itinerary,
+    setItinerary((prev) => [
+      ...prev,
       {
+        id: `step-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
         time: timeStr,
         spotTitle: '',
         spotTitleEn: '',
@@ -128,7 +137,7 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   };
 
   const removeItineraryStop = (index: number) => {
-    setItinerary(itinerary.filter((_, i) => i !== index));
+    setItinerary((prev) => prev.filter((_, i) => i !== index));
   };
 
   const clearItinerary = () => {
@@ -136,35 +145,57 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   };
 
   const moveItineraryStop = (index: number, direction: 'up' | 'down') => {
-    if (direction === 'up' && index === 0) return;
-    if (direction === 'down' && index === itinerary.length - 1) return;
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    const updated = [...itinerary];
-    const temp = updated[index];
-    updated[index] = updated[targetIndex];
-    updated[targetIndex] = temp;
-    setItinerary(updated);
+    setItinerary((prev) => {
+      if (direction === 'up' && index === 0) return prev;
+      if (direction === 'down' && index === prev.length - 1) return prev;
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      const updated = [...prev];
+      const temp = updated[index];
+      updated[index] = updated[targetIndex];
+      updated[targetIndex] = temp;
+      return updated;
+    });
   };
 
   const duplicateItineraryStop = (index: number) => {
-    const target = itinerary[index];
-    const updated = [...itinerary];
-    updated.splice(index + 1, 0, { ...target, spotTitle: `${target.spotTitle} (続き)` });
-    setItinerary(updated);
+    setItinerary((prev) => {
+      const target = prev[index];
+      if (!target) return prev;
+      const updated = [...prev];
+      updated.splice(index + 1, 0, {
+        ...target,
+        id: `step-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        spotTitle: target.spotTitle ? `${target.spotTitle} (続き)` : '',
+        spotTitleEn: target.spotTitleEn ? `${target.spotTitleEn} (cont.)` : '',
+      });
+      return updated;
+    });
   };
 
-  const updateItineraryStop = (index: number, field: keyof ItineraryItem, value: any) => {
-    const updated = [...itinerary];
-    updated[index] = { ...updated[index], [field]: value };
-    setItinerary(updated);
+  // Atomic, rock-solid functional updater that never loses values during input
+  const updateItineraryStop = (index: number, fields: Partial<ItineraryItem>) => {
+    setItinerary((prev) => {
+      const updated = [...prev];
+      if (updated[index]) {
+        updated[index] = { ...updated[index], ...fields };
+      }
+      return updated;
+    });
   };
 
   // AI-generated itinerary tailored to current theme/title
   const generateItineraryWithAI = () => {
     const context = `${title} ${description} ${category} ${area}`.toLowerCase();
+    const wrapWithIds = (rawItems: Array<Omit<EditableItineraryItem, 'id'>>): EditableItineraryItem[] => {
+      const now = Date.now();
+      return rawItems.map((item, idx) => ({
+        ...item,
+        id: `step-ai-${now}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
+      }));
+    };
 
     if (context.includes('音') || context.includes('音楽') || context.includes('sound') || category === 'music-sound') {
-      setItinerary([
+      setItinerary(wrapWithIds([
         {
           time: '10:00',
           spotTitle: '集合場所にて合流＆ハイレゾレコーダー操作レクチャー',
@@ -197,9 +228,9 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
           descriptionEn: 'Synthesizing captured sounds with live acoustic piano music.',
           isDeepSpot: true,
         },
-      ]);
+      ]));
     } else if (context.includes('廃墟') || context.includes('産業') || context.includes('遺産') || context.includes('鉱山')) {
-      setItinerary([
+      setItinerary(wrapWithIds([
         {
           time: '09:30',
           spotTitle: '駅集合＆近代化遺産ヘルメット・ライト点検',
@@ -232,9 +263,9 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
           descriptionEn: 'Reviewing architectural photography and historic blueprints.',
           isDeepSpot: false,
         },
-      ]);
+      ]));
     } else if (context.includes('銭湯') || context.includes('サウナ') || context.includes('温泉')) {
-      setItinerary([
+      setItinerary(wrapWithIds([
         {
           time: '13:00',
           spotTitle: '下町駅集合＆宮造り銭湯の建築鑑賞ブリーフィング',
@@ -267,9 +298,9 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
           descriptionEn: 'Classic glass-bottle coffee milk in a nostalgic Showa cafe alley.',
           isDeepSpot: false,
         },
-      ]);
+      ]));
     } else if (context.includes('鉄道') || context.includes('江ノ電') || category === 'railway-train') {
-      setItinerary([
+      setItinerary(wrapWithIds([
         {
           time: '09:45',
           spotTitle: '駅集合＆1日乗車券購入・撮影マナーレクチャー',
@@ -302,10 +333,10 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
           descriptionEn: 'Admiring classic wooden interiors and distinctive round headlights.',
           isDeepSpot: false,
         },
-      ]);
+      ]));
     } else {
       // General Culture / History / Custom
-      setItinerary([
+      setItinerary(wrapWithIds([
         {
           time: '10:00',
           spotTitle: `${area || '現地'}集合・本日の探訪テーマオリエンテーション`,
@@ -338,7 +369,7 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
           descriptionEn: 'Final highlight, closing discussions, and curated book recommendations.',
           isDeepSpot: true,
         },
-      ]);
+      ]));
     }
 
     confetti({
@@ -359,8 +390,8 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
     { 
       label: '城郭・歴史', 
       cat: 'history-castle', 
-      url: 'https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=1200&q=80',
-      thumb: 'https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=200&q=80',
+      url: 'https://images.unsplash.com/photo-1590559899731-a382839e5549?auto=format&fit=crop&w=1200&q=80',
+      thumb: 'https://images.unsplash.com/photo-1590559899731-a382839e5549?auto=format&fit=crop&w=200&q=80',
     },
     { 
       label: '京都・寺社', 
@@ -1133,39 +1164,41 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
             ) : (
               <div className="space-y-3">
                 {itinerary.map((stop, index) => (
-                  <div key={index} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2.5 hover:border-slate-300 transition-colors">
+                  <div key={stop.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2.5 hover:border-slate-300 transition-colors shadow-xs">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center gap-2 flex-1">
-                        <span className="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">
+                        <span className="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0 shadow-xs">
                           {index + 1}
                         </span>
                         <input
                           type="text"
-                          placeholder="時間 (例: 10:30)"
+                          placeholder="時間 (10:30)"
                           value={stop.time}
-                          onChange={(e) => updateItineraryStop(index, 'time', e.target.value)}
-                          className="w-24 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 font-bold focus:outline-none focus:border-blue-500"
+                          onChange={(e) => updateItineraryStop(index, { time: e.target.value })}
+                          className="w-24 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 font-bold focus:outline-none focus:border-blue-500 shadow-2xs"
                         />
                         <input
                           type="text"
-                          placeholder="スポット名（例: 逗子・葉山駅 / 八木邸）"
+                          placeholder="スポット名（例: 逗子・葉山駅 / 八木邸 / 小田原城）"
                           value={stop.spotTitle}
-                          onChange={(e) => {
-                            updateItineraryStop(index, 'spotTitle', e.target.value);
-                            updateItineraryStop(index, 'spotTitleEn', e.target.value);
-                          }}
+                          onChange={(e) =>
+                            updateItineraryStop(index, {
+                              spotTitle: e.target.value,
+                              spotTitleEn: e.target.value,
+                            })
+                          }
                           required
-                          className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 font-bold focus:outline-none focus:border-blue-500 placeholder-slate-400"
+                          className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 font-bold focus:outline-none focus:border-blue-500 placeholder-slate-400 shadow-2xs"
                         />
                       </div>
 
                       {/* Controls: Up, Down, Duplicate, DeepSpot toggle, Delete */}
                       <div className="flex items-center gap-1 self-end sm:self-auto">
-                        <label className="flex items-center gap-1 text-[11px] text-rose-600 font-bold mr-2 cursor-pointer bg-white px-2 py-1 rounded-lg border border-slate-200">
+                        <label className="flex items-center gap-1 text-[11px] text-rose-600 font-bold mr-2 cursor-pointer bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs hover:bg-rose-50/50 transition-colors">
                           <input
                             type="checkbox"
                             checked={stop.isDeepSpot}
-                            onChange={(e) => updateItineraryStop(index, 'isDeepSpot', e.target.checked)}
+                            onChange={(e) => updateItineraryStop(index, { isDeepSpot: e.target.checked })}
                             className="accent-rose-600 cursor-pointer"
                           />
                           <span>★ 見どころ</span>
@@ -1218,11 +1251,13 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                       rows={2}
                       placeholder="このスポットでの見どころ、オタク解説、聴きどころ、撮影アングルなど自由に書き換えてください"
                       value={stop.description}
-                      onChange={(e) => {
-                        updateItineraryStop(index, 'description', e.target.value);
-                        updateItineraryStop(index, 'descriptionEn', e.target.value);
-                      }}
-                      className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                      onChange={(e) =>
+                        updateItineraryStop(index, {
+                          description: e.target.value,
+                          descriptionEn: e.target.value,
+                        })
+                      }
+                      className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 shadow-2xs"
                     />
                   </div>
                 ))}

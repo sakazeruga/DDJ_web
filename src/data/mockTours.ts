@@ -20,7 +20,7 @@ export const INITIAL_TOURS: Tour[] = [
     imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
     gallery: [
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1520523839898-507125cd53c1?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80',
     ],
     guide: {
@@ -743,9 +743,9 @@ export const INITIAL_TOURS: Tour[] = [
     price: 6500,
     maxParticipants: 6,
     languages: ['日本語', 'English'],
-    imageUrl: 'https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1590559899731-a382839e5549?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1590559899731-a382839e5549?auto=format&fit=crop&w=1200&q=80',
     ],
     guide: {
       id: 'guide-4',
@@ -858,7 +858,7 @@ export const INITIAL_TOURS: Tour[] = [
         categoryLabelEn: 'Souvenir',
         description: '慶応元年創業。天然素材にこだわった小田原名物かまぼこや、小田原城をモチーフにした限定細工かまぼこ。',
         descriptionEn: 'Founded in 1865. Premier artisan steamed fish cakes and castle-shaped collectible culinary gifts.',
-        imageUrl: 'https://images.unsplash.com/photo-1607349913338-fca6f7429606?auto=format&fit=crop&w=600&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80',
         distance: '風祭駅すぐ / 駅ナカ売店あり',
         priceRange: '¥1,000〜¥3,000',
         rating: 4.8,
@@ -876,7 +876,7 @@ export const INITIAL_TOURS: Tour[] = [
         categoryLabelEn: 'Castle Scenery',
         description: '青空に白く映える三層四階の天守閣と、威風堂々たる銅門の石垣。最上階からは相模湾が一望。',
         descriptionEn: 'Towering four-story castle keep and restored bronze gates with sweeping 360-degree views of Sagami Bay.',
-        imageUrl: 'https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=600&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1590559899731-a382839e5549?auto=format&fit=crop&w=600&q=80',
         distance: '小田原城址公園内',
         rating: 4.8,
         highlightTag: '難攻不落の天守と相模湾絶景',
@@ -1042,7 +1042,7 @@ export const INITIAL_TOURS: Tour[] = [
         categoryLabelEn: 'Shrine Scenery',
         description: '杉木立に囲まれた朱塗りの鳥居と緩やかな石段。映画の宮水神社のモデルとなった神聖な静寂。',
         descriptionEn: 'Towering vermilion shrine torii gate and stone steps framed by ancient cedar forests.',
-        imageUrl: 'https://images.unsplash.com/photo-1478436127897-769e00d0c715?auto=format&fit=crop&w=600&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?auto=format&fit=crop&w=600&q=80',
         distance: '飛騨古川駅 徒歩15分',
         rating: 4.9,
         highlightTag: '宮水神社モデルの厳かな石段',
