@@ -21,7 +21,7 @@ import {
   Gift, 
   Camera, 
   Layers,
-  Ticket,
+  Share,
   MessageSquare,
   Footprints
 } from 'lucide-react';
@@ -213,15 +213,14 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
               <span className="sm:hidden text-[11px]">{lang === 'ja' ? '質問' : 'Ask'}</span>
             </button>
 
-            {/* Shiori Share CTA */}
+            {/* Share CTA */}
             <button
               onClick={() => setIsShareModalOpen(true)}
               className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
-              title="旅のしおりをSNSシェア・保存"
+              title="ツアーをシェア"
             >
-              <Ticket className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="hidden sm:inline">{lang === 'ja' ? '旅のしおり' : 'Pass'}</span>
-              <span className="sm:hidden text-[11px]">{lang === 'ja' ? 'しおり' : 'Pass'}</span>
+              <Share className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>シェア</span>
             </button>
 
             {/* Favorite CTA */}
@@ -250,33 +249,56 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
         </div>
 
         {/* Scrollable Content Body */}
-        <div className="overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 bg-slate-50">
-          {/* Hero Banner & Gallery */}
-          <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+        <div className="overflow-y-auto p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6 bg-slate-50">
+          {/* Hero Photo Card (Clean visual showcase) */}
+          <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100 aspect-[16/10] sm:h-72 md:h-80">
             <img
               src={tour.imageUrl}
               alt={lang === 'ja' ? tour.title : tour.titleEn}
-              className="w-full h-56 sm:h-72 md:h-80 object-cover"
+              className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent" />
-
-            <div className="absolute bottom-5 left-5 right-5">
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded bg-blue-600 text-white">
-                  {lang === 'ja' ? tour.tags[0] || '文化ツアー' : tour.category}
-                </span>
-                <div className="flex items-center gap-1 text-xs text-white bg-black/60 px-2.5 py-0.5 rounded backdrop-blur-sm">
-                  <Languages className="w-3.5 h-3.5 text-blue-300" />
-                  <span>{tour.languages.join(' / ')}</span>
-                </div>
+            {/* Top Badges */}
+            <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900/80 text-white backdrop-blur-md border border-white/20">
+                {lang === 'ja' ? tour.tags[0] || '文化ツアー' : tour.category}
+              </span>
+              <div className="flex items-center gap-1 text-[11px] text-white bg-slate-900/80 px-2.5 py-0.5 rounded-full backdrop-blur-md border border-white/20">
+                <Languages className="w-3 h-3 text-blue-300" />
+                <span>{tour.languages.join(' / ')}</span>
               </div>
+            </div>
+          </div>
 
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white leading-tight mb-1.5">
-                {lang === 'ja' ? tour.title : tour.titleEn}
-              </h2>
-              <p className="text-xs sm:text-sm text-yellow-300 font-medium">
-                {lang === 'ja' ? tour.catchphrase : tour.catchphraseEn}
-              </p>
+          {/* Clean Title & Catchphrase Card (100% visible, never buried) */}
+          <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xs space-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-blue-700">
+              <span className="px-2 py-0.5 rounded-md bg-blue-50 border border-blue-200 font-mono text-[11px]">
+                DDJ-TOUR #{tour.id.toUpperCase()}
+              </span>
+              <span className="text-slate-300">|</span>
+              <span className="text-slate-600 flex items-center gap-1 text-xs">
+                <MapPin className="w-3.5 h-3.5 text-rose-500" />
+                {lang === 'ja' ? tour.area : tour.areaEn}
+              </span>
+            </div>
+
+            <h2 className="text-base sm:text-2xl md:text-3xl font-black text-slate-900 leading-snug">
+              {lang === 'ja' ? tour.title : tour.titleEn}
+            </h2>
+
+            <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+              {lang === 'ja' ? tour.catchphrase : tour.catchphraseEn}
+            </p>
+
+            <div className="flex flex-wrap gap-1.5 pt-1.5 border-t border-slate-100">
+              {tour.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium"
+                >
+                  #{tag}
+                </span>
+              ))}
             </div>
           </div>
 
@@ -942,8 +964,8 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                         onClick={() => setIsShareModalOpen(true)}
                         className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                       >
-                        <Ticket className="w-4 h-4" />
-                        <span>🎫 旅のしおりをSNSシェア・保存</span>
+                        <Share className="w-4 h-4" />
+                        <span>ツアーをシェアする（URL・カード画像）</span>
                       </button>
 
                       <button
