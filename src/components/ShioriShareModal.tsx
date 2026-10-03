@@ -21,21 +21,25 @@ export const ShioriShareModal: React.FC<ShioriShareModalProps> = ({
 
   if (!isOpen) return null;
 
-  const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://ddj-web.vercel.app';
+  const baseUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}`
+    : 'https://ddj-web.vercel.app';
+  const tourUrl = `${baseUrl}?tour=${encodeURIComponent(tour.id)}`;
+
   const shareText = lang === 'ja'
     ? `【DEEP DIVE JAPAN 旅のしおり】\n「${tour.title}」\n愛好歴${tour.guide.otakuYears}年のガイドと巡る日本の偏愛カルチャーツアー！\n熱量Lv.${tour.otakuLevel} 🔥\n\n#DeepDiveJapan #偏愛カルチャーツアー #聖地巡礼 #日本探訪`
     : `【DEEP DIVE JAPAN Travel Pass】\n"${tour.titleEn}"\nExplore Japan's deep subcultures with local connoisseur guides! Passion Lv.${tour.otakuLevel} 🔥\n\n#DeepDiveJapan #JapanTravel #Subculture`;
 
-  // Handle Twitter / X Share
+  // Handle Twitter / X Share with individual tour URL
   const handleShareX = () => {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(currentUrl)}`;
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(tourUrl)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
-  // Handle Copy Link
+  // Handle Copy Link with individual tour URL
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(`${shareText}\n${currentUrl}`);
+      await navigator.clipboard.writeText(`${shareText}\n${tourUrl}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {

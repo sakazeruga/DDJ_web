@@ -166,9 +166,61 @@ export function App() {
     localStorage.setItem('ddj_favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  // Modal states
+  // Modal states & URL deep-linking (?tour={tourId})
   const [selectedTour, setSelectedTour] = useState<Tour | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Sync selectedTour with URL query parameter ?tour={tourId}
+  const handleSelectTour = (tour: Tour | null) => {
+    setSelectedTour(tour);
+    try {
+      const url = new URL(window.location.href);
+      if (tour) {
+        url.searchParams.set('tour', tour.id);
+      } else {
+        url.searchParams.delete('tour');
+      }
+      window.history.replaceState(null, '', url.toString());
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Deep-link check on initial mount or when tours are loaded
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tourParam = params.get('tour');
+      if (tourParam) {
+        const found = tours.find((t) => t.id === tourParam);
+        if (found) {
+          setSelectedTour(found);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [tours]);
+
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const tourParam = params.get('tour');
+        if (tourParam) {
+          const found = tours.find((t) => t.id === tourParam);
+          setSelectedTour(found || null);
+        } else {
+          setSelectedTour(null);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [tours]);
 
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState('');
@@ -475,7 +527,7 @@ export function App() {
                   tours={filteredTours}
                   lang={lang}
                   currency={currency}
-                  onSelectTour={(t) => setSelectedTour(t)}
+                  onSelectTour={(t) => handleSelectTour(t)}
                 />
               ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -485,7 +537,7 @@ export function App() {
                       tour={tour}
                       lang={lang}
                       currency={currency}
-                      onSelect={(t) => setSelectedTour(t)}
+                      onSelect={(t) => handleSelectTour(t)}
                       isFavorite={favorites.includes(tour.id)}
                       onToggleFavorite={handleToggleFavorite}
                     />
@@ -497,7 +549,7 @@ export function App() {
                   {filteredTours.map((tour) => (
                     <div
                       key={tour.id}
-                      onClick={() => setSelectedTour(tour)}
+                      onClick={() => handleSelectTour(tour)}
                       className="bg-white hover:bg-blue-50/20 rounded-2xl border border-slate-200 hover:border-blue-400 p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 cursor-pointer shadow-xs hover:shadow-md transition-all"
                     >
                       <div className="flex items-start sm:items-center gap-4 flex-1">
@@ -578,7 +630,7 @@ export function App() {
             onCancelBooking={handleCancelBooking}
             favorites={favorites}
             allTours={tours}
-            onSelectTour={(t) => setSelectedTour(t)}
+            onSelectTour={(t) => handleSelectTour(t)}
             onToggleFavorite={handleToggleFavorite}
             myHostedTours={myHostedTours}
             onDeleteHostedTour={handleDeleteHostedTour}
@@ -590,7 +642,7 @@ export function App() {
       {selectedTour && (
         <TourDetailModal
           tour={selectedTour}
-          onClose={() => setSelectedTour(null)}
+          onClose={() => handleSelectTour(null)}
           lang={lang}
           currency={currency}
           isFavorite={favorites.includes(selectedTour.id)}
