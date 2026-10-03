@@ -93,6 +93,34 @@ export interface Tour {
   rating: number;
   reviewsCount: number;
   createdAt: string;
+  talkSessionConfig?: TalkSessionConfig;
+}
+
+export interface TalkSessionConfig {
+  enabled: boolean;
+  price30m: number;
+  price60m: number;
+  topics: string[];
+  availableSlots?: string[];
+}
+
+export interface TalkSessionBooking {
+  id: string;
+  tourId: string;
+  tourTitle: string;
+  guideName: string;
+  guideAvatar: string;
+  date: string;
+  timeSlot: string;
+  durationMinutes: 30 | 60;
+  totalPrice: number;
+  topic: string;
+  userName: string;
+  userEmail: string;
+  userNotes?: string;
+  meetUrl: string;
+  status: 'confirmed' | 'completed' | 'cancelled';
+  createdAt: string;
 }
 
 export interface Booking {

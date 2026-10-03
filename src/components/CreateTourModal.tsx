@@ -4,7 +4,8 @@ import {
   Plus, 
   Trash2, 
   Sparkles, 
-  Flame 
+  Flame,
+  Headphones
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { Tour, TourCategory, Language, ItineraryItem } from '../types';
@@ -46,6 +47,12 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   const [guideName, setGuideName] = useState('ガイド');
   const [guideBio, setGuideBio] = useState('この歴史と街並みが大好きで10年通っています！');
   const [guideYears, setGuideYears] = useState<number>(10);
+
+  // Online Talk Session configuration states
+  const [enableTalkSession, setEnableTalkSession] = useState(true);
+  const [talkPrice30m, setTalkPrice30m] = useState(3000);
+  const [talkPrice60m, setTalkPrice60m] = useState(5500);
+  const [talkTopicsInput, setTalkTopicsInput] = useState('事前作戦会議・ルート相談, マニアック機材・書籍相談, 自由オタクトーク');
 
   // Dynamic itinerary stops
   const [itinerary, setItinerary] = useState<ItineraryItem[]>([
@@ -154,6 +161,13 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
       rating: 5.0,
       reviewsCount: 0,
       createdAt: new Date().toISOString().split('T')[0],
+      talkSessionConfig: enableTalkSession ? {
+        enabled: true,
+        price30m: Number(talkPrice30m),
+        price60m: Number(talkPrice60m),
+        topics: talkTopicsInput.split(',').map((s) => s.trim()).filter(Boolean),
+        availableSlots: ['平日夜 20:00〜20:30', '休日午後 14:00〜14:30', '休日夜 21:00〜21:30'],
+      } : undefined,
     };
 
     onTourCreated(newTour);
@@ -542,6 +556,65 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
                 />
               </div>
+            </div>
+
+            {/* Online Talk Session Offering Setup */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-2xl border border-blue-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center">
+                    <Headphones className="w-4 h-4 text-yellow-300" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
+                      <span>1on1 オンライン会話セッションも同時開設</span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-blue-600 text-white font-normal">おすすめ</span>
+                    </h4>
+                    <p className="text-[11px] text-slate-500">遠方・海外のファンと自宅からZoom/Google Meetで直接語り合えます</p>
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={enableTalkSession}
+                  onChange={(e) => setEnableTalkSession(e.target.checked)}
+                  className="w-5 h-5 text-blue-600 rounded cursor-pointer"
+                />
+              </div>
+
+              {enableTalkSession && (
+                <div className="space-y-2 pt-2 border-t border-blue-100 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">30分セッション料金 (円)</label>
+                      <input
+                        type="number"
+                        value={talkPrice30m}
+                        onChange={(e) => setTalkPrice30m(Number(e.target.value))}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">60分セッション料金 (円)</label>
+                      <input
+                        type="number"
+                        value={talkPrice60m}
+                        onChange={(e) => setTalkPrice60m(Number(e.target.value))}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-900"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">トークテーマ（カンマ区切り）</label>
+                    <input
+                      type="text"
+                      value={talkTopicsInput}
+                      onChange={(e) => setTalkTopicsInput(e.target.value)}
+                      placeholder="例: 事前作戦会議, 機材相談, 自由オタクトーク"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-900 placeholder-slate-400"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

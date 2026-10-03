@@ -19,6 +19,7 @@ import type {
   TourRequest, 
   TourReview, 
   Booking, 
+  TalkSessionBooking,
   Language, 
   Currency,
   TourCategory 
@@ -149,6 +150,42 @@ export function App() {
     localStorage.setItem('ddj_cultural_bookings_v1', JSON.stringify(bookings));
   }, [bookings]);
 
+  // Talk Session Bookings state
+  const [talkBookings, setTalkBookings] = useState<TalkSessionBooking[]>(() => {
+    const saved = localStorage.getItem('ddj_talk_session_bookings_v1');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return [
+      {
+        id: 'talk-init-1',
+        tourId: 'tour-mottainai-sound',
+        tourTitle: '守時タツミと行く『MOTTAINAI SOUND』原風景フィールドレコーディングツアー',
+        guideName: '守時 タツミ',
+        guideAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+        date: '2026-10-10',
+        timeSlot: '本日 20:00〜20:30',
+        durationMinutes: 30,
+        totalPrice: 3500,
+        topic: '自然音・フィールドレコーディング機材＆マイクセッティング相談',
+        userName: '音響ファン',
+        userEmail: 'soundfan@example.com',
+        userNotes: 'バイノーラルマイクの選び方を教えてほしいです！',
+        meetUrl: 'https://meet.google.com/ddj-mott-ainai',
+        status: 'confirmed',
+        createdAt: '2026-10-02',
+      },
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('ddj_talk_session_bookings_v1', JSON.stringify(talkBookings));
+  }, [talkBookings]);
+
   // Favorites state
   const [favorites, setFavorites] = useState<string[]>(() => {
     const saved = localStorage.getItem('ddj_favorites');
@@ -267,6 +304,23 @@ export function App() {
   const handleCancelBooking = (bookingId: string) => {
     if (confirm(lang === 'ja' ? '予約をキャンセルしますか？' : 'Cancel this booking?')) {
       setBookings((prev) => prev.filter((b) => b.id !== bookingId));
+    }
+  };
+
+  // Add talk session booking
+  const handleAddTalkBooking = (newTalkData: Omit<TalkSessionBooking, 'id' | 'createdAt'>) => {
+    const newTalk: TalkSessionBooking = {
+      ...newTalkData,
+      id: `talk-${Date.now()}`,
+      createdAt: new Date().toISOString().split('T')[0],
+    };
+    setTalkBookings((prev) => [newTalk, ...prev]);
+  };
+
+  // Cancel talk session booking
+  const handleCancelTalkBooking = (talkId: string) => {
+    if (confirm(lang === 'ja' ? '会話セッションをキャンセルしますか？' : 'Cancel this talk session?')) {
+      setTalkBookings((prev) => prev.filter((t) => t.id !== talkId));
     }
   };
 
@@ -652,6 +706,8 @@ export function App() {
             currency={currency}
             bookings={bookings}
             onCancelBooking={handleCancelBooking}
+            talkBookings={talkBookings}
+            onCancelTalkBooking={handleCancelTalkBooking}
             favorites={favorites}
             allTours={tours}
             onSelectTour={(t) => handleSelectTour(t)}
@@ -674,6 +730,7 @@ export function App() {
           reviews={reviews}
           onAddReview={handleAddReview}
           onAddBooking={handleAddBooking}
+          onAddTalkBooking={handleAddTalkBooking}
         />
       )}
 

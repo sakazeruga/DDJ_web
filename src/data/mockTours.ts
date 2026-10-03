@@ -198,6 +198,18 @@ export const INITIAL_TOURS: Tour[] = [
     rating: 5.0,
     reviewsCount: 38,
     createdAt: '2026-10-02',
+    talkSessionConfig: {
+      enabled: true,
+      price30m: 3500,
+      price60m: 6500,
+      topics: [
+        '自然音・フィールドレコーディング機材＆マイクセッティング相談',
+        'MOTTAINAI SOUND 47都道府県の採集秘話＆未公開音源トーク',
+        'ピアノと自然音の即興セッション・作曲裏話',
+        '自由相談・音フェチオタクトーク',
+      ],
+      availableSlots: ['本日 20:00〜20:30', '明日 19:30〜20:00', '今週末 14:00〜14:30', '今週末 21:00〜21:30'],
+    },
   },
   {
     id: 'tour-1',
@@ -358,6 +370,18 @@ export const INITIAL_TOURS: Tour[] = [
     rating: 4.98,
     reviewsCount: 42,
     createdAt: '2026-09-20',
+    talkSessionConfig: {
+      enabled: true,
+      price30m: 2800,
+      price60m: 5200,
+      topics: [
+        '自分だけの京都幕末巡礼ルート作成＆作戦会議',
+        '油小路の変・八木邸の謎！最新学説とオタク考察',
+        '歴史初心者向け新選組入門＆おすすめ書籍ガイド',
+        '愛刀・池田屋事件の生々しい実況トーク',
+      ],
+      availableSlots: ['本日 21:00〜21:30', '明日 20:30〜21:00', '今週金曜 20:00〜20:30', '今週末 15:00〜15:30'],
+    },
   },
   {
     id: 'tour-2',

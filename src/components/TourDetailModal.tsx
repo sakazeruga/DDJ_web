@@ -23,10 +23,12 @@ import {
   Layers,
   Share,
   MessageSquare,
-  Footprints
+  Footprints,
+  Headphones,
+  Video
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import type { Tour, TourReview, Booking, Language, NearbySpotCategory, Currency, ItineraryItem } from '../types';
+import type { Tour, TourReview, Booking, TalkSessionBooking, Language, NearbySpotCategory, Currency, ItineraryItem } from '../types';
 import { translations } from '../i18n/translations';
 import { formatPrice } from '../utils/currency';
 import { ShioriShareModal } from './ShioriShareModal';
@@ -42,6 +44,7 @@ interface TourDetailModalProps {
   reviews: TourReview[];
   onAddReview: (review: Omit<TourReview, 'id' | 'date'>) => void;
   onAddBooking: (booking: Omit<Booking, 'id' | 'createdAt'>) => void;
+  onAddTalkBooking?: (booking: Omit<TalkSessionBooking, 'id' | 'createdAt'>) => void;
 }
 
 export const TourDetailModal: React.FC<TourDetailModalProps> = ({
@@ -54,6 +57,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
   reviews,
   onAddReview,
   onAddBooking,
+  onAddTalkBooking,
 }) => {
   if (!tour) return null;
   const t = translations[lang];
@@ -70,7 +74,10 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
   const [focusedItinerary, setFocusedItinerary] = useState<ItineraryItem | null>(null);
 
-  // Booking states
+  // Booking mode (Real Tour vs Online Talk Session)
+  const [bookingMode, setBookingMode] = useState<'tour' | 'talk'>('tour');
+
+  // Booking states (Real Tour)
   const [bookingDate, setBookingDate] = useState<string>(() => {
     const d = new Date();
     d.setDate(d.getDate() + 7);
@@ -81,6 +88,16 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
   const [userEmail, setUserEmail] = useState<string>('');
   const [customRequest, setCustomRequest] = useState<string>('');
   const [isBooked, setIsBooked] = useState<boolean>(false);
+
+  // Talk Session states
+  const [talkDuration, setTalkDuration] = useState<30 | 60>(30);
+  const [talkTopic, setTalkTopic] = useState<string>(() => tour.talkSessionConfig?.topics[0] || '自由相談・オタクトーク');
+  const [talkSlot, setTalkSlot] = useState<string>(() => tour.talkSessionConfig?.availableSlots?.[0] || '本日 20:00〜20:30');
+  const [talkUserName, setTalkUserName] = useState<string>('');
+  const [talkUserEmail, setTalkUserEmail] = useState<string>('');
+  const [talkUserNotes, setTalkUserNotes] = useState<string>('');
+  const [isTalkBooked, setIsTalkBooked] = useState<boolean>(false);
+  const [generatedMeetUrl, setGeneratedMeetUrl] = useState<string>('');
 
   // Review states
   const [reviewRating, setReviewRating] = useState<number>(5);
@@ -151,6 +168,51 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
     });
 
     setIsBooked(true);
+  };
+
+  // Handle Talk Session submission (1on1 Online Talk)
+  const handleTalkBookingSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!talkUserName || !talkUserEmail) {
+      alert(lang === 'ja' ? 'お名前とメールアドレスを入力してください' : 'Please provide your name and email');
+      return;
+    }
+
+    const price = talkDuration === 30
+      ? (tour.talkSessionConfig?.price30m || 3000)
+      : (tour.talkSessionConfig?.price60m || 5500);
+
+    const meetCode = `ddj-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}`;
+    const meetUrl = `https://meet.google.com/${meetCode}`;
+    setGeneratedMeetUrl(meetUrl);
+
+    if (onAddTalkBooking) {
+      onAddTalkBooking({
+        tourId: tour.id,
+        tourTitle: lang === 'ja' ? tour.title : tour.titleEn,
+        guideName: tour.guide.name,
+        guideAvatar: tour.guide.avatar,
+        date: new Date().toISOString().split('T')[0],
+        timeSlot: talkSlot || '本日 20:00〜20:30',
+        durationMinutes: talkDuration,
+        totalPrice: price,
+        topic: talkTopic || (tour.talkSessionConfig?.topics[0] || '自由オタクトーク・相談'),
+        userName: talkUserName,
+        userEmail: talkUserEmail,
+        userNotes: talkUserNotes,
+        meetUrl,
+        status: 'confirmed',
+      });
+    }
+
+    confetti({
+      particleCount: 90,
+      spread: 75,
+      origin: { y: 0.6 },
+      colors: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'],
+    });
+
+    setIsTalkBooked(true);
   };
 
   // Handle review submission
@@ -932,178 +994,461 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
             {/* Right Column: Sticky Booking Card */}
             <div className="lg:col-span-1">
               <div className="sticky top-20 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xl">
-                {isBooked ? (
-                  <div className="text-center py-4 space-y-4 relative overflow-hidden">
-                    <div className="w-20 h-20 mx-auto stamp-seal">
-                      <img
-                        src="/assets/seichi_stamp.jpg"
-                        alt="巡礼済スタンプ"
-                        className="w-full h-full object-contain rounded-full shadow-md"
-                      />
-                    </div>
-                    <div className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold border border-blue-200">
-                      ★ 予約リクエスト受付完了 ★
-                    </div>
-                    <h4 className="text-lg font-black text-slate-900">{t.bookingModal.successTitle}</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      {t.bookingModal.successDesc}
-                    </p>
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left space-y-1 text-xs font-mono">
-                      <div className="text-blue-700 font-bold border-b border-slate-200 pb-1 mb-2">
-                        PASS #DDJ-{tour.id.toUpperCase()}-VERIFIED
-                      </div>
-                      <div className="text-slate-500">参加日: <span className="text-slate-900 font-bold">{bookingDate}</span></div>
-                      <div className="text-slate-500">人数: <span className="text-slate-900 font-bold">{guestsCount}名</span></div>
-                      <div className="text-slate-500">合計: <span className="text-blue-600 font-black text-sm">{formatPrice(totalPrice, currency)}</span></div>
-                      <div className="text-slate-500">ガイド: <span className="text-slate-900 font-bold">{tour.guide.name}</span></div>
-                    </div>
+                {/* Mode Switch Tabs: Real Tour vs Online Talk Session */}
+                <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl mb-4 border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setBookingMode('tour')}
+                    className={`py-2 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      bookingMode === 'tour'
+                        ? 'bg-white text-blue-700 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Footprints className="w-3.5 h-3.5 text-blue-600" />
+                    <span>現地ツアー</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBookingMode('talk')}
+                    className={`py-2 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer relative ${
+                      bookingMode === 'talk'
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Headphones className="w-3.5 h-3.5 text-yellow-300" />
+                    <span>会話セッション</span>
+                    <span className="absolute -top-1.5 -right-1 px-1.5 py-0.2 rounded-full bg-rose-500 text-[9px] font-black text-white shadow-xs">
+                      1on1
+                    </span>
+                  </button>
+                </div>
 
-                    <div className="pt-2 flex flex-col gap-2">
+                {/* 1. Real Tour Booking Flow */}
+                {bookingMode === 'tour' && (
+                  isBooked ? (
+                    <div className="text-center py-4 space-y-4 relative overflow-hidden">
+                      <div className="w-20 h-20 mx-auto stamp-seal">
+                        <img
+                          src="/assets/seichi_stamp.jpg"
+                          alt="巡礼済スタンプ"
+                          className="w-full h-full object-contain rounded-full shadow-md"
+                        />
+                      </div>
+                      <div className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold border border-blue-200">
+                        ★ 予約リクエスト受付完了 ★
+                      </div>
+                      <h4 className="text-lg font-black text-slate-900">{t.bookingModal.successTitle}</h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        {t.bookingModal.successDesc}
+                      </p>
+                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left space-y-1 text-xs font-mono">
+                        <div className="text-blue-700 font-bold border-b border-slate-200 pb-1 mb-2">
+                          PASS #DDJ-{tour.id.toUpperCase()}-VERIFIED
+                        </div>
+                        <div className="text-slate-500">参加日: <span className="text-slate-900 font-bold">{bookingDate}</span></div>
+                        <div className="text-slate-500">人数: <span className="text-slate-900 font-bold">{guestsCount}名</span></div>
+                        <div className="text-slate-500">合計: <span className="text-blue-600 font-black text-sm">{formatPrice(totalPrice, currency)}</span></div>
+                        <div className="text-slate-500">ガイド: <span className="text-slate-900 font-bold">{tour.guide.name}</span></div>
+                      </div>
+
+                      <div className="pt-2 flex flex-col gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsShareModalOpen(true)}
+                          className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <Share className="w-4 h-4" />
+                          <span>ツアーをシェアする（URL・カード画像）</span>
+                        </button>
+
+                        <button
+                          onClick={() => setIsBooked(false)}
+                          className="text-xs text-slate-500 hover:text-blue-600 hover:underline pt-1 inline-block cursor-pointer font-bold"
+                        >
+                          {lang === 'ja' ? '← 別の日程でリクエストする' : '← Book another date'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleBookingSubmit} className="space-y-4">
+                      <div className="flex items-baseline justify-between border-b border-slate-100 pb-3">
+                        <div>
+                          <span className="text-2xl font-black text-slate-900">{formatPrice(tour.price, currency)}</span>
+                          <span className="text-xs text-slate-500 ml-1">{t.tourCard.perPerson}</span>
+                        </div>
+                        <div className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          リクエスト受付中
+                        </div>
+                      </div>
+
+                      {/* Date Picker */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                          <span>{t.bookingModal.date}</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={bookingDate}
+                          onChange={(e) => setBookingDate(e.target.value)}
+                          required
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
+                        />
+                      </div>
+
+                      {/* Guests count */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-indigo-600" />
+                          <span>{t.bookingModal.participants} (最大 {tour.maxParticipants}名)</span>
+                        </label>
+                        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setGuestsCount(Math.max(1, guestsCount - 1))}
+                            className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center cursor-pointer shadow-xs"
+                          >
+                            -
+                          </button>
+                          <span className="flex-1 text-center font-bold text-slate-900 text-sm">
+                            {guestsCount} 名
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setGuestsCount(Math.min(tour.maxParticipants, guestsCount + 1))}
+                            className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center cursor-pointer shadow-xs"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Guest Information */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          {t.bookingModal.name}
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="例: 山田 太郎 / Ken"
+                          value={userName}
+                          onChange={(e) => setUserName(e.target.value)}
+                          required
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          {t.bookingModal.email}
+                        </label>
+                        <input
+                          type="email"
+                          placeholder="example@deepdivejapan.com"
+                          value={userEmail}
+                          onChange={(e) => setUserEmail(e.target.value)}
+                          required
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
+                        />
+                      </div>
+
+                      {/* Custom Request */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          {t.bookingModal.customMessage}
+                        </label>
+                        <textarea
+                          rows={2}
+                          placeholder={t.bookingModal.customMessagePlaceholder}
+                          value={customRequest}
+                          onChange={(e) => setCustomRequest(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
+                        />
+                      </div>
+
+                      {/* Price Calculation Box */}
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5 text-xs">
+                        <div className="flex justify-between text-slate-500">
+                          <span>{formatPrice(tour.price, currency)} × {guestsCount}名</span>
+                          <span>{formatPrice(totalPrice, currency)}</span>
+                        </div>
+                        <div className="flex justify-between font-bold text-slate-900 pt-2 border-t border-slate-200 text-sm">
+                          <span>{t.bookingModal.totalPrice}</span>
+                          <span className="text-blue-600 font-black">{formatPrice(totalPrice, currency)}</span>
+                        </div>
+                      </div>
+
+                      {/* Pre-Booking Guide Consultation Button */}
                       <button
                         type="button"
-                        onClick={() => setIsShareModalOpen(true)}
-                        className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                        onClick={() => setIsGuideChatOpen(true)}
+                        className="w-full py-2.5 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs border border-blue-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <Share className="w-4 h-4" />
-                        <span>ツアーをシェアする（URL・カード画像）</span>
+                        <MessageSquare className="w-4 h-4 text-blue-600" />
+                        <span>{lang === 'ja' ? '💬 不安な点をガイドに事前相談する' : '💬 Ask Guide Before Booking'}</span>
                       </button>
 
+                      {/* Submit Button */}
                       <button
-                        onClick={() => setIsBooked(false)}
-                        className="text-xs text-slate-500 hover:text-blue-600 hover:underline pt-1 inline-block cursor-pointer font-bold"
+                        type="submit"
+                        className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                       >
-                        {lang === 'ja' ? '← 別の日程でリクエストする' : '← Book another date'}
+                        <Send className="w-4 h-4" />
+                        <span>{t.bookingModal.submit}</span>
                       </button>
+                    </form>
+                  )
+                )}
+
+                {/* 2. Online Talk Session Booking Flow */}
+                {bookingMode === 'talk' && (
+                  isTalkBooked ? (
+                    <div className="text-center py-4 space-y-4 relative overflow-hidden">
+                      <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+                        <Video className="w-8 h-8 text-yellow-300" />
+                      </div>
+                      <div className="inline-block px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-200">
+                        ★ 1on1会話セッション予約完了 ★
+                      </div>
+                      <h4 className="text-lg font-black text-slate-900">オンライン会話セッションが確定しました！</h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        ガイド <b>{tour.guide.name}</b> との個別セッションです。開始時間になりましたら以下のGoogle Meetリンクからご参加ください。
+                      </p>
+
+                      {/* Google Meet Connection Box */}
+                      <div className="bg-slate-900 text-white p-4 rounded-2xl text-left space-y-2 text-xs">
+                        <div className="flex items-center justify-between text-[11px] text-slate-400">
+                          <span className="flex items-center gap-1">
+                            <Video className="w-3.5 h-3.5 text-emerald-400" />
+                            Google Meet 専用接続リンク
+                          </span>
+                          <span className="text-emerald-400 font-bold">発行済</span>
+                        </div>
+                        <div className="font-mono text-xs bg-slate-800 p-2 rounded-lg text-blue-300 break-all select-all border border-slate-700">
+                          {generatedMeetUrl}
+                        </div>
+                        <div className="pt-1 flex gap-2">
+                          <a
+                            href={generatedMeetUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-center font-bold text-xs flex items-center justify-center gap-1 transition-colors"
+                          >
+                            <Video className="w-3.5 h-3.5" />
+                            <span>Meetを開く</span>
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(generatedMeetUrl);
+                              alert('Google Meetのリンクをコピーしました！');
+                            }}
+                            className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-colors cursor-pointer"
+                          >
+                            コピー
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-left space-y-1.5 text-xs font-mono">
+                        <div className="text-slate-500">日時枠: <span className="text-slate-900 font-bold">{talkSlot}</span></div>
+                        <div className="text-slate-500">所要時間: <span className="text-slate-900 font-bold">{talkDuration}分 (1on1)</span></div>
+                        <div className="text-slate-500">テーマ: <span className="text-blue-700 font-bold">{talkTopic}</span></div>
+                        <div className="text-slate-500">料金: <span className="text-blue-600 font-black">{formatPrice(talkDuration === 30 ? (tour.talkSessionConfig?.price30m || 3000) : (tour.talkSessionConfig?.price60m || 5500), currency)}</span></div>
+                      </div>
+
+                      <div className="pt-2">
+                        <button
+                          onClick={() => setIsTalkBooked(false)}
+                          className="text-xs text-slate-500 hover:text-blue-600 hover:underline cursor-pointer font-bold"
+                        >
+                          ← 別の時間スロットを予約する
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <form onSubmit={handleBookingSubmit} className="space-y-4">
-                    <div className="flex items-baseline justify-between border-b border-slate-100 pb-3">
+                  ) : (
+                    <form onSubmit={handleTalkBookingSubmit} className="space-y-4">
+                      {/* Guide intro banner */}
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-xl border border-blue-100 flex items-center gap-3">
+                        <img
+                          src={tour.guide.avatar}
+                          alt={tour.guide.name}
+                          className="w-10 h-10 rounded-full object-cover border border-blue-200 flex-shrink-0"
+                        />
+                        <div className="text-xs">
+                          <div className="font-bold text-slate-900 flex items-center gap-1">
+                            <span>{tour.guide.name}</span>
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-600 text-white font-normal">オンライン</span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 line-clamp-1">
+                            愛好歴{tour.guide.otakuYears}年。自宅からZoom/Meetで直結！
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Duration selector: 30m vs 60m */}
                       <div>
-                        <span className="text-2xl font-black text-slate-900">{formatPrice(tour.price, currency)}</span>
-                        <span className="text-xs text-slate-500 ml-1">{t.tourCard.perPerson}</span>
-                      </div>
-                      <div className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        リクエスト受付中
-                      </div>
-                    </div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5 text-blue-600" />
+                            <span>セッション時間</span>
+                          </span>
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setTalkDuration(30)}
+                            className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                              talkDuration === 30
+                                ? 'border-blue-600 bg-blue-50/60 ring-2 ring-blue-600/20'
+                                : 'border-slate-200 hover:border-slate-300 bg-slate-50'
+                            }`}
+                          >
+                            <div className="font-bold text-xs text-slate-900">30分 トーク</div>
+                            <div className="text-blue-600 font-black text-sm mt-0.5">
+                              {formatPrice(tour.talkSessionConfig?.price30m || 3000, currency)}
+                            </div>
+                            <div className="text-[10px] text-slate-400">気軽な相談・機材質問</div>
+                          </button>
 
-                    {/* Date Picker */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                        <span>{t.bookingModal.date}</span>
-                      </label>
-                      <input
-                        type="date"
-                        value={bookingDate}
-                        onChange={(e) => setBookingDate(e.target.value)}
-                        required
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
-                      />
-                    </div>
+                          <button
+                            type="button"
+                            onClick={() => setTalkDuration(60)}
+                            className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                              talkDuration === 60
+                                ? 'border-blue-600 bg-blue-50/60 ring-2 ring-blue-600/20'
+                                : 'border-slate-200 hover:border-slate-300 bg-slate-50'
+                            }`}
+                          >
+                            <div className="font-bold text-xs text-slate-900 flex items-center justify-between">
+                              <span>60分 ディープ</span>
+                              <span className="text-[9px] px-1 rounded bg-amber-100 text-amber-800 font-bold">お得</span>
+                            </div>
+                            <div className="text-blue-600 font-black text-sm mt-0.5">
+                              {formatPrice(tour.talkSessionConfig?.price60m || 5500, currency)}
+                            </div>
+                            <div className="text-[10px] text-slate-400">作戦会議・マニアック談義</div>
+                          </button>
+                        </div>
+                      </div>
 
-                    {/* Guests count */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-indigo-600" />
-                        <span>{t.bookingModal.participants} (最大 {tour.maxParticipants}名)</span>
-                      </label>
-                      <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-1.5">
-                        <button
-                          type="button"
-                          onClick={() => setGuestsCount(Math.max(1, guestsCount - 1))}
-                          className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center cursor-pointer shadow-xs"
+                      {/* Topic Selection */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
+                          <Headphones className="w-3.5 h-3.5 text-indigo-600" />
+                          <span>トークテーマを選択</span>
+                        </label>
+                        <select
+                          value={talkTopic}
+                          onChange={(e) => setTalkTopic(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
                         >
-                          -
-                        </button>
-                        <span className="flex-1 text-center font-bold text-slate-900 text-sm">
-                          {guestsCount} 名
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setGuestsCount(Math.min(tour.maxParticipants, guestsCount + 1))}
-                          className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center cursor-pointer shadow-xs"
-                        >
-                          +
-                        </button>
+                          {(tour.talkSessionConfig?.topics || [
+                            'マニアックな質問・機材やおすすめスポット相談',
+                            '自分専用のオリジナル巡礼ルート作成＆作戦会議',
+                            '未公開エピソード・自由オタクトーク'
+                          ]).map((t, idx) => (
+                            <option key={idx} value={t}>{t}</option>
+                          ))}
+                        </select>
                       </div>
-                    </div>
 
-                    {/* Guest Information */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        {t.bookingModal.name}
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="例: 山田 太郎 / Ken"
-                        value={userName}
-                        onChange={(e) => setUserName(e.target.value)}
-                        required
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        {t.bookingModal.email}
-                      </label>
-                      <input
-                        type="email"
-                        placeholder="example@deepdivejapan.com"
-                        value={userEmail}
-                        onChange={(e) => setUserEmail(e.target.value)}
-                        required
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
-                      />
-                    </div>
-
-                    {/* Custom Request */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        {t.bookingModal.customMessage}
-                      </label>
-                      <textarea
-                        rows={2}
-                        placeholder={t.bookingModal.customMessagePlaceholder}
-                        value={customRequest}
-                        onChange={(e) => setCustomRequest(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
-                      />
-                    </div>
-
-                    {/* Price Calculation Box */}
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5 text-xs">
-                      <div className="flex justify-between text-slate-500">
-                        <span>{formatPrice(tour.price, currency)} × {guestsCount}名</span>
-                        <span>{formatPrice(totalPrice, currency)}</span>
+                      {/* Available Slots */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                          <span>空きスロットから選択</span>
+                        </label>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {(tour.talkSessionConfig?.availableSlots || [
+                            '本日 20:00〜20:30',
+                            '明日 19:30〜20:00',
+                            '今週金曜 21:00〜21:30',
+                            '今週末 15:00〜15:30'
+                          ]).map((slot, idx) => (
+                            <button
+                              type="button"
+                              key={idx}
+                              onClick={() => setTalkSlot(slot)}
+                              className={`py-2 px-2 rounded-lg text-[11px] font-bold border transition-all cursor-pointer text-center ${
+                                talkSlot === slot
+                                  ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                              }`}
+                            >
+                              {slot}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex justify-between font-bold text-slate-900 pt-2 border-t border-slate-200 text-sm">
-                        <span>{t.bookingModal.totalPrice}</span>
-                        <span className="text-blue-600 font-black">{formatPrice(totalPrice, currency)}</span>
+
+                      {/* Participant Contact */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          お名前
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="例: 佐藤 健 / Ken"
+                          value={talkUserName}
+                          onChange={(e) => setTalkUserName(e.target.value)}
+                          required
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
+                        />
                       </div>
-                    </div>
 
-                    {/* Pre-Booking Guide Consultation Button */}
-                    <button
-                      type="button"
-                      onClick={() => setIsGuideChatOpen(true)}
-                      className="w-full py-2.5 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs border border-blue-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <MessageSquare className="w-4 h-4 text-blue-600" />
-                      <span>{lang === 'ja' ? '💬 不安な点をガイドに事前相談する' : '💬 Ask Guide Before Booking'}</span>
-                    </button>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          メールアドレス（Google Meet招待リンク送信用）
+                        </label>
+                        <input
+                          type="email"
+                          placeholder="example@deepdivejapan.com"
+                          value={talkUserEmail}
+                          onChange={(e) => setTalkUserEmail(e.target.value)}
+                          required
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
+                        />
+                      </div>
 
-                    {/* Submit Button */}
-                    <button
-                      type="submit"
-                      className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                    >
-                      <Send className="w-4 h-4" />
-                      <span>{t.bookingModal.submit}</span>
-                    </button>
-                  </form>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          事前に聞いておきたいこと・相談メモ（任意）
+                        </label>
+                        <textarea
+                          rows={2}
+                          placeholder="例: 録音マイクの選び方について聞きたいです。初心者ですがよろしくお願いします！"
+                          value={talkUserNotes}
+                          onChange={(e) => setTalkUserNotes(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
+                        />
+                      </div>
+
+                      {/* Price Summary */}
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5 text-xs">
+                        <div className="flex justify-between items-center text-slate-600">
+                          <span>1on1 オンライン会話セッション ({talkDuration}分)</span>
+                          <span className="text-blue-600 font-black text-sm">
+                            {formatPrice(talkDuration === 30 ? (tour.talkSessionConfig?.price30m || 3000) : (tour.talkSessionConfig?.price60m || 5500), currency)}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          ※Google Meet URLが即時発行され、マイページにも保存されます。
+                        </div>
+                      </div>
+
+                      {/* Submit Talk Session Button */}
+                      <button
+                        type="submit"
+                        className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-md shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                      >
+                        <Video className="w-4 h-4" />
+                        <span>会話セッションを予約する（Meet発行）</span>
+                      </button>
+                    </form>
+                  )
                 )}
               </div>
             </div>
