@@ -194,7 +194,7 @@ export const RequestBoardView: React.FC<RequestBoardViewProps> = ({
                   </label>
                   <input
                     type="text"
-                    placeholder="例: 【歴史】関ヶ原の合戦場を陣跡巡りしながら解説してほしい"
+                    placeholder="例: 【聖地巡礼】『ぼっち・ざ・ろっく！』下北沢の舞台を巡りたい / 神保町の昭和純喫茶を深掘りしたい"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
@@ -208,7 +208,7 @@ export const RequestBoardView: React.FC<RequestBoardViewProps> = ({
                   </label>
                   <input
                     type="text"
-                    placeholder="例: 関ヶ原の戦い / 箱根登山鉄道 / 君の名は"
+                    placeholder="例: ぼっち・ざ・ろっく！ / 昭和純喫茶・古書 / 箱根登山鉄道 / 関ヶ原の戦い"
                     value={targetAnime}
                     onChange={(e) => setTargetAnime(e.target.value)}
                     required
@@ -221,7 +221,7 @@ export const RequestBoardView: React.FC<RequestBoardViewProps> = ({
                     <label className="block text-xs font-bold text-slate-700 mb-1">希望エリア</label>
                     <input
                       type="text"
-                      placeholder="例: 岐阜・関ヶ原 / 神奈川・箱根"
+                      placeholder="例: 東京・下北沢 / 東京・神保町 / 神奈川・箱根"
                       value={area}
                       onChange={(e) => setArea(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"

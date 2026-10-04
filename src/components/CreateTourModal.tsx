@@ -42,7 +42,7 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   const [title, setTitle] = useState('');
   const [catchphrase, setCatchphrase] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<TourCategory>('history-castle');
+  const [category, setCategory] = useState<TourCategory>('anime-pilgrimage');
   const [area, setArea] = useState('');
   const [otakuLevel, setOtakuLevel] = useState<1 | 2 | 3 | 4 | 5>(3);
   const [durationHours, setDurationHours] = useState<number | ''>(3.5);
@@ -50,7 +50,7 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   const [maxParticipants, setMaxParticipants] = useState<number | ''>(6);
   const [languagesInput, setLanguagesInput] = useState<string>('日本語, English');
   const [imageUrl, setImageUrl] = useState<string>(
-    'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80'
+    'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80'
   );
   const [imageTab, setImageTab] = useState<'preset' | 'upload' | 'url'>('preset');
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -63,10 +63,10 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   const [customTags, setCustomTags] = useState<string[]>([]);
 
   const [recommendedPrep, setRecommendedPrep] = useState('');
-  const [mustBringInput, setMustBringInput] = useState('歩きやすい靴, カメラ');
+  const [mustBringInput, setMustBringInput] = useState('歩きやすい靴, カメラ・スマホ, 推しグッズやメモ帳');
   const [meetingPoint, setMeetingPoint] = useState('');
   const [guideName, setGuideName] = useState('ガイド');
-  const [guideBio, setGuideBio] = useState('この歴史と街並みが大好きで10年通っています！');
+  const [guideBio, setGuideBio] = useState('この作品・カルチャーと街並みが大好きで10年通い詰めています！知られざるディープな熱量をお届けします。');
   const [guideYears, setGuideYears] = useState<number | ''>(10);
 
   // Online Talk Session configuration states
@@ -74,6 +74,75 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   const [talkPrice30m, setTalkPrice30m] = useState<number | ''>(3000);
   const [talkPrice60m, setTalkPrice60m] = useState<number | ''>(5500);
   const [talkTopicsInput, setTalkTopicsInput] = useState('事前作戦会議・ルート相談, マニアック機材・書籍相談, 自由オタクトーク');
+
+  // Dynamic placeholder examples tailored to the selected theme
+  const categoryHints: Record<string, {
+    title: string;
+    catchphrase: string;
+    area: string;
+    prep: string;
+    spot: string;
+    meeting: string;
+  }> = {
+    'anime-pilgrimage': {
+      title: '例: 【聖地巡礼】『ぼっち・ざ・ろっく！』下北沢の舞台と音楽カルチャー巡り',
+      catchphrase: '例: 作中完全一致の画角撮影と、モデルとなったライブハウス街を巡る熱狂の半日。',
+      area: '例: 東京・下北沢 / 岐阜・飛騨高山 / 埼玉・秩父',
+      prep: '例: アニメ第1期、または原作コミック1〜2巻の履修',
+      spot: 'スポット名（例: 下北沢SHELTER前 / 本多劇場横路地 / 作中モデル喫茶）',
+      meeting: '例: 下北沢駅 中央口改札前',
+    },
+    'retro-showa': {
+      title: '例: 【昭和ノスタルジー】神保町・路地裏の老舗純喫茶と絶版古書ディグり散歩',
+      catchphrase: '例: ネルドリップ珈琲の香りと、昭和の面影が色濃く残る看板建築を巡る。',
+      area: '例: 東京・神保町 / 東京・谷中・根津 / 大阪・中崎町',
+      prep: '例: 昭和カルチャーへの興味、読みたい本や雑誌のジャンル',
+      spot: 'スポット名（例: 神保町さぼうる / すずらん通り古書店街 / 看板建築の路地）',
+      meeting: '例: 神保町駅 A7出口前',
+    },
+    'oshikatsu-subculture': {
+      title: '例: 【秋葉原深層】知る人ぞ知るディープな中古レア品フロア巡り＆推し活映えツアー',
+      catchphrase: '例: 一般観光では絶対に見つけられない雑居ビルの名店と専用フォトブースへ。',
+      area: '例: 東京・秋葉原 / 東京・中野ブロードウェイ / 大阪・日本橋',
+      prep: '例: あなたの「推し」の名前・推しカラー',
+      spot: 'スポット名（例: ラジオ会館裏ディープフロア / 推し色カスタムカフェ）',
+      meeting: '例: JR秋葉原駅 電気街口改札前',
+    },
+    'folklore-yokai': {
+      title: '例: 【怪異と伝承】一条戻橋から清明神社へ〜日常の裏に潜む異界の境界歩き〜',
+      catchphrase: '例: 古文書に刻まれた結界と、妖怪伝説の痕跡を夕暮れ時に辿る。',
+      area: '例: 京都・洛北 / 岩手・遠野 / 鳥取・境港',
+      prep: '例: 日本の妖怪・民俗伝承への知的好奇心',
+      spot: 'スポット名（例: 一条戻橋の欄干 / 晴明神社・桔梗庵 / 境界の道祖神）',
+      meeting: '例: 烏丸今出川駅 2番出口前',
+    },
+    'music-sound': {
+      title: '例: 【音風景サンプリング】鎌倉の潮騒・竹林の風音・水琴窟フィールドレコーディング',
+      catchphrase: '例: バイノーラルマイクで集音する、日本の美しい環境音と即興セッション。',
+      area: '例: 神奈川・鎌倉・逗子 / 京都・嵯峨野',
+      prep: '例: お気に入りのイヤホンまたはヘッドホン',
+      spot: 'スポット名（例: 逗子海岸の波打ち際 / 竹林の小径 / 水琴窟のある日本庭園）',
+      meeting: '例: 鎌倉駅 東口改札前',
+    },
+    'railway-train': {
+      title: '例: 【江ノ電極限探訪】民家軒先スレスレ走行と海辺の単線すれ違い鑑賞',
+      catchphrase: '例: ダイヤグラムの秘密と、知られざる引退車両の面影を巡る鉄道旅。',
+      area: '例: 神奈川・江ノ島・鎌倉 / 静岡・大井川',
+      prep: '例: カメラ、1日乗車券の準備',
+      spot: 'スポット名（例: 腰越〜江ノ島間 路面併用区間 / 鎌倉高校前駅）',
+      meeting: '例: 藤沢駅 江ノ電改札口前',
+    },
+    'history-castle': {
+      title: '例: 【城郭構造オタクと行く】石垣の刻印と横矢掛かりを読み解く小田原城探訪',
+      catchphrase: '例: 観光客が見落とす土塁・空堀・武者返しを軍事視点で完全解説。',
+      area: '例: 神奈川・小田原 / 京都・壬生・祇園 / 岐阜・関ヶ原',
+      prep: '例: 戦国武将または幕末の歴史への興味',
+      spot: 'スポット名（例: 小田原城 天守裏石垣 / 八幡山古郭 / 本丸土塁）',
+      meeting: '例: 小田原駅 東口城址公園側',
+    },
+  };
+
+  const activeHint = categoryHints[category] || categoryHints['anime-pilgrimage'];
 
   // Dynamic itinerary stops with unique stable IDs
   interface EditableItineraryItem extends ItineraryItem {
@@ -84,8 +153,8 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
     {
       id: 'step-init-1',
       time: '10:00',
-      spotTitle: '集合場所にて合流＆ブリーフィング',
-      spotTitleEn: 'Meeting & Briefing',
+      spotTitle: '集合場所にて合流＆本日の探訪ブリーフィング',
+      spotTitleEn: 'Meeting & Tour Briefing',
       description: '当日のルート説明と参加者の興味のあるポイントをヒアリング。',
       descriptionEn: 'Orientation and tailored route overview.',
       isDeepSpot: false,
@@ -93,27 +162,27 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
     {
       id: 'step-init-2',
       time: '11:15',
-      spotTitle: 'メイン遺構・名所探訪',
-      spotTitleEn: 'Main Spot Exploration',
-      description: '一般の観光客が素通りしてしまうディープな背景や遺構を解説。',
-      descriptionEn: 'Deep lore and hidden architectural details.',
+      spotTitle: 'メイン聖地・ディープ名所探訪',
+      spotTitleEn: 'Main Highlight & Culture Spot Exploration',
+      description: '一般の観光客が素通りしてしまう作中アングルや、街のディープなカルチャーの核心を案内。',
+      descriptionEn: 'Deep insider lore and specialized perspectives that general tourists easily miss.',
       isDeepSpot: true,
     },
     {
       id: 'step-init-3',
       time: '12:30',
-      spotTitle: '老舗名店・ローカルスポットで休憩',
-      spotTitleEn: 'Local Rest & Refreshments',
-      description: '地元の人しか知らない名物や軽食を楽しみながらカルチャートーク。',
+      spotTitle: '老舗純喫茶・ローカル名店で休憩＆オタクトーク',
+      spotTitleEn: 'Local Rest, Retro Cafe & Cultural Chat',
+      description: '地元の人しか知らない名物や軽食を楽しみながら、作品やカルチャーへの愛を熱く語り合う。',
       descriptionEn: 'Authentic local treats and passionate cultural talks.',
       isDeepSpot: false,
     },
     {
       id: 'step-init-4',
       time: '14:00',
-      spotTitle: 'クライマックス深掘りスポット＆現地解散',
-      spotTitleEn: 'Climax Spot & Farewell',
-      description: '旅の総括と、次回の聖地巡礼に役立つマニアックなおすすめ情報交換。',
+      spotTitle: 'クライマックス聖地・ハイライトスポット＆現地解散',
+      spotTitleEn: 'Climax Landmark & Farewell',
+      description: '旅の総括と、次回の聖地巡礼・探訪に役立つマニアックなおすすめ情報交換。',
       descriptionEn: 'Summary and curated tips for future explorations.',
       isDeepSpot: true,
     },
@@ -985,7 +1054,7 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
               </label>
               <input
                 type="text"
-                placeholder={t.createModal.tourTitlePlaceholder}
+                placeholder={activeHint.title}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
@@ -1000,7 +1069,7 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
               </label>
               <input
                 type="text"
-                placeholder={t.createModal.catchphrasePlaceholder}
+                placeholder={activeHint.catchphrase}
                 value={catchphrase}
                 onChange={(e) => setCatchphrase(e.target.value)}
                 required
@@ -1115,13 +1184,13 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                   onChange={(e) => setCategory(e.target.value as TourCategory)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white font-medium"
                 >
-                  <option value="music-sound">🎵 音楽・音風景・MOTTAINAI SOUND</option>
-                  <option value="history-castle">🏯 歴史・城郭・新選組</option>
-                  <option value="railway-train">🚃 鉄道・秘境駅・レトロ車両</option>
                   <option value="anime-pilgrimage">⛩️ アニメ・漫画・聖地巡礼</option>
                   <option value="retro-showa">☕ 昭和レトロ・古書店・純喫茶</option>
-                  <option value="folklore-yokai">👻 妖怪・神話・民俗伝承</option>
                   <option value="oshikatsu-subculture">💖 推し活・アイドル・サブカル</option>
+                  <option value="music-sound">🎵 音楽・音風景・MOTTAINAI SOUND</option>
+                  <option value="railway-train">🚃 鉄道・秘境駅・レトロ車両</option>
+                  <option value="folklore-yokai">👻 妖怪・神話・民俗伝承</option>
+                  <option value="history-castle">🏯 歴史・城郭・新選組</option>
                   
                   {/* Dynamic Custom / AI Added Themes */}
                   {customThemes.length > 0 && (
@@ -1151,12 +1220,19 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder={t.createModal.areaPlaceholder}
+                  placeholder={activeHint.area}
                   value={area}
                   onChange={(e) => setArea(e.target.value)}
                   required
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
                 />
+              </div>
+
+              {/* Live Category Example Hint Badge */}
+              <div className="sm:col-span-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-50/70 border border-blue-200 text-blue-900 text-xs shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                <span className="font-bold flex-shrink-0">選択中テーマの入力例:</span>
+                <span className="truncate text-slate-700 font-medium">{activeHint.title}</span>
               </div>
             </div>
 
@@ -1531,7 +1607,7 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                         />
                         <input
                           type="text"
-                          placeholder="スポット名（例: 逗子・葉山駅 / 八木邸 / 小田原城）"
+                          placeholder={activeHint.spot}
                           value={stop.spotTitle}
                           onChange={(e) =>
                             updateItineraryStop(index, {
@@ -1630,7 +1706,7 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder={t.createModal.meetingPointPlaceholder}
+                  placeholder={activeHint.meeting}
                   value={meetingPoint}
                   onChange={(e) => setMeetingPoint(e.target.value)}
                   required
@@ -1644,7 +1720,7 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="例: 戦国武将の合戦図や関連作品"
+                  placeholder={activeHint.prep}
                   value={recommendedPrep}
                   onChange={(e) => setRecommendedPrep(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400"
