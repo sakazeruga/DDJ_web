@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { 
   X, 
+  ArrowLeft,
   Clock, 
   MapPin, 
   Star, 
@@ -241,31 +242,60 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center pt-8 sm:pt-4 pb-4 px-2 sm:p-4 md:p-6 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center items-center bg-slate-950/75 backdrop-blur-sm p-0 sm:p-4 md:p-6 overflow-y-auto cursor-pointer"
+      aria-modal="true"
+      role="dialog"
+    >
+      {/* Mobile Top Dismiss Touch Zone (Tap or drag down to dismiss) */}
+      <div 
+        onClick={onClose}
+        className="w-full flex items-center justify-center py-2.5 sm:hidden cursor-pointer"
+        title="タップして閉じる"
+      >
+        <div className="w-12 h-1.5 rounded-full bg-white/40 shadow-xs" />
+      </div>
+
       {/* Modal Container */}
-      <div className="relative w-full max-w-5xl bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden my-2 sm:my-auto max-h-[90vh] sm:max-h-[92vh] flex flex-col">
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-5xl bg-white border-t sm:border border-slate-200 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] sm:max-h-[90vh] flex flex-col cursor-default"
+      >
         {/* Sticky Header Bar */}
-        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3.5 border-b border-slate-200 flex items-center justify-between gap-1.5 sm:gap-3">
+        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3.5 border-b border-slate-200 flex items-center justify-between gap-2">
+          {/* Left: Quick Back / Close Button & Badges */}
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-[11px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap flex-shrink-0">
+            <button
+              onClick={onClose}
+              className="min-h-[44px] px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 flex-shrink-0 border border-slate-200"
+              title="閉じる"
+              aria-label="Close modal"
+            >
+              <ArrowLeft className="w-4 h-4 text-slate-700" />
+              <span className="font-bold">{lang === 'ja' ? '閉じる' : 'Close'}</span>
+            </button>
+
+            <span className="text-[11px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap flex-shrink-0">
               Lv.{tour.otakuLevel} {lang === 'ja' ? '熱量' : 'Depth'}
             </span>
-            <div className="text-xs text-slate-500 font-medium hidden sm:flex items-center gap-1 truncate">
+
+            <div className="text-xs text-slate-500 font-medium hidden md:flex items-center gap-1 truncate">
               <MapPin className="w-3.5 h-3.5 text-rose-500 flex-shrink-0" />
               <span className="truncate">{lang === 'ja' ? tour.area : tour.areaEn}</span>
             </div>
           </div>
 
+          {/* Right Actions: Share, Favorite, and Secondary Close Button */}
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-            {/* Guide Consultation CTA */}
+            {/* Guide Consultation CTA (Desktop only in header; accessible in body for mobile) */}
             <button
               onClick={() => setIsGuideChatOpen(true)}
-              className="min-h-[44px] flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition-colors cursor-pointer active:scale-95"
+              className="hidden sm:flex min-h-[44px] items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition-colors cursor-pointer active:scale-95"
               title="ガイドに事前質問・相談"
             >
               <MessageSquare className="w-4 h-4 text-blue-600 flex-shrink-0" />
-              <span className="hidden sm:inline">{lang === 'ja' ? 'ガイドに質問' : 'Ask Guide'}</span>
-              <span className="sm:hidden text-xs">{lang === 'ja' ? '質問' : 'Ask'}</span>
+              <span>{lang === 'ja' ? 'ガイドに質問' : 'Ask Guide'}</span>
             </button>
 
             {/* Share CTA */}
@@ -275,7 +305,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
               title="ツアーをシェア"
             >
               <Share className="w-4 h-4 flex-shrink-0" />
-              <span>シェア</span>
+              <span className="hidden sm:inline">シェア</span>
             </button>
 
             {/* Favorite CTA (44px touch target) */}
@@ -1447,6 +1477,17 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Mobile Bottom Dismiss Bar */}
+        <div className="sm:hidden p-3 bg-white border-t border-slate-200 flex items-center gap-2">
+          <button
+            onClick={onClose}
+            className="w-full min-h-[46px] rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95 border border-slate-200 shadow-xs"
+          >
+            <ArrowLeft className="w-4 h-4 text-slate-600" />
+            <span>{lang === 'ja' ? '← 一覧に戻る（閉じる）' : '← Back to Tours (Close)'}</span>
+          </button>
         </div>
       </div>
 

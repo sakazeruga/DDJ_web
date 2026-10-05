@@ -117,10 +117,13 @@ export const GuideChatModal: React.FC<GuideChatModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md">
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md cursor-pointer"
+    >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col h-[600px] max-h-[90vh] animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col h-[600px] max-h-[90vh] animate-in fade-in zoom-in-95 duration-200 cursor-default"
       >
         {/* Chat Header */}
         <div className="p-4 bg-gradient-to-r from-slate-900 to-blue-950 text-white flex items-center justify-between shadow-md">

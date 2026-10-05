@@ -30,7 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-2">
         {/* Brand Logo - Stylish 3-Tier Stack */}
         <div 
           onClick={() => setCurrentTab('explore')}
@@ -87,13 +87,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </nav>
 
-        {/* Right Actions: Currency, Language, Favorites, Host */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
-          {/* Currency Switcher */}
+        {/* Right Actions: Currency, Language, Favorites, Host (Mobile compact & non-overflowing) */}
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          {/* Currency Switcher (Desktop only to prevent mobile overflow) */}
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value as Currency)}
-            className="min-h-[44px] bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 rounded-xl px-2.5 py-2 cursor-pointer focus:outline-none transition-colors"
+            className="hidden sm:block min-h-[44px] bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 rounded-xl px-2.5 py-2 cursor-pointer focus:outline-none transition-colors"
             aria-label="Currency"
           >
             <option value="JPY">¥ JPY</option>
@@ -105,17 +105,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Language Switcher */}
           <button
             onClick={() => setLang(lang === 'ja' ? 'en' : 'ja')}
-            className="min-h-[44px] flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 hover:text-blue-600 transition-colors cursor-pointer"
+            className="min-h-[44px] h-11 px-2.5 sm:px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 hover:text-blue-600 transition-colors cursor-pointer flex items-center gap-1"
             title="Switch Language"
           >
             <Globe className="w-3.5 h-3.5 text-blue-600" />
-            <span>{lang === 'ja' ? 'EN' : 'JP'}</span>
+            <span className="text-[11px] sm:text-xs">{lang === 'ja' ? 'EN' : 'JP'}</span>
           </button>
 
           {/* Favorites Button */}
           <button
             onClick={openFavorites}
-            className="w-11 h-11 relative rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-rose-500 transition-colors cursor-pointer flex items-center justify-center"
+            className="w-11 h-11 relative rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-rose-500 transition-colors cursor-pointer flex items-center justify-center flex-shrink-0"
             title={t.nav.favorites}
             aria-label="Favorites"
           >
@@ -130,11 +130,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Host a Tour CTA Button */}
           <button
             onClick={openCreateModal}
-            className="min-h-[44px] flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer active:scale-95 whitespace-nowrap"
+            className="min-h-[44px] h-11 px-3 sm:px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-1.5 flex-shrink-0"
+            title={lang === 'ja' ? 'ツアーを企画・投稿する' : 'Host a Tour'}
           >
             <PlusCircle className="w-4 h-4" />
             <span className="hidden sm:inline">{t.nav.hostTour}</span>
-            <span className="sm:hidden">{lang === 'ja' ? '企画・投稿' : 'Host'}</span>
+            <span className="sm:hidden text-xs">{lang === 'ja' ? '投稿' : 'Host'}</span>
           </button>
         </div>
       </div>

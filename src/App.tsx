@@ -545,7 +545,7 @@ export function App() {
   const [viewMode, setViewMode] = useState<'grid' | 'catalog' | 'map'>('grid');
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white max-w-full overflow-x-clip">
       {/* Navbar */}
       <Navbar
         currentTab={currentTab}

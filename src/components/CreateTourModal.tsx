@@ -1052,10 +1052,27 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-4xl bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center items-center bg-slate-950/75 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto cursor-pointer"
+      aria-modal="true"
+      role="dialog"
+    >
+      {/* Mobile Top Dismiss Touch Zone */}
+      <div 
+        onClick={onClose}
+        className="w-full flex items-center justify-center py-2.5 sm:hidden cursor-pointer"
+        title="タップして閉じる"
+      >
+        <div className="w-12 h-1.5 rounded-full bg-white/40 shadow-xs" />
+      </div>
+
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-4xl bg-white border-t sm:border border-slate-200 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] sm:max-h-[90vh] flex flex-col cursor-default"
+      >
         {/* Header */}
-        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {isEditMode ? <Edit3 className="w-5 h-5 text-indigo-600" /> : <Sparkles className="w-5 h-5 text-blue-600" />}
             <div>
