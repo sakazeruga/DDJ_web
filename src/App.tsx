@@ -264,6 +264,7 @@ export function App() {
   // Modal states & URL deep-linking (?tour={tourId})
   const [selectedTour, setSelectedTour] = useState<Tour | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingTour, setEditingTour] = useState<Tour | null>(null);
 
   // Sync selectedTour with URL query parameter ?tour={tourId}
   const handleSelectTour = (tour: Tour | null) => {
@@ -412,6 +413,22 @@ export function App() {
     setCurrentTab('explore');
   };
 
+  // Edit hosted tour
+  const handleEditHostedTour = (tour: Tour) => {
+    setEditingTour(tour);
+    setIsCreateModalOpen(true);
+  };
+
+  // Update tour
+  const handleTourUpdated = (updatedTour: Tour) => {
+    setTours((prev) => prev.map((t) => (t.id === updatedTour.id ? updatedTour : t)));
+    setEditingTour(null);
+    setIsCreateModalOpen(false);
+    if (selectedTour && selectedTour.id === updatedTour.id) {
+      setSelectedTour(updatedTour);
+    }
+  };
+
   // Delete hosted tour
   const handleDeleteHostedTour = (tourId: string) => {
     if (confirm(lang === 'ja' ? 'このツアーを削除しますか？' : 'Delete this tour?')) {
@@ -538,7 +555,10 @@ export function App() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         }}
-        openCreateModal={() => setIsCreateModalOpen(true)}
+        openCreateModal={() => {
+          setEditingTour(null);
+          setIsCreateModalOpen(true);
+        }}
         lang={lang}
         setLang={setLang}
         currency={currency}
@@ -564,7 +584,10 @@ export function App() {
                 scrollToExplore();
               }}
               onSearch={scrollToExplore}
-              openCreateModal={() => setIsCreateModalOpen(true)}
+              openCreateModal={() => {
+                setEditingTour(null);
+                setIsCreateModalOpen(true);
+              }}
               customThemes={customThemes}
               onAddCustomTheme={handleAddCustomTheme}
             />
@@ -748,7 +771,10 @@ export function App() {
             {/* Features & Why Us */}
             <FeaturesSection
               lang={lang}
-              openCreateModal={() => setIsCreateModalOpen(true)}
+              openCreateModal={() => {
+                setEditingTour(null);
+                setIsCreateModalOpen(true);
+              }}
             />
           </>
         )}
@@ -776,6 +802,11 @@ export function App() {
             onToggleFavorite={handleToggleFavorite}
             myHostedTours={myHostedTours}
             onDeleteHostedTour={handleDeleteHostedTour}
+            onEditHostedTour={handleEditHostedTour}
+            onOpenCreateTour={() => {
+              setEditingTour(null);
+              setIsCreateModalOpen(true);
+            }}
           />
         )}
       </main>
@@ -799,9 +830,14 @@ export function App() {
       {/* Create Tour Modal */}
       <CreateTourModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setEditingTour(null);
+        }}
         lang={lang}
         onTourCreated={handleTourCreated}
+        initialTour={editingTour}
+        onTourUpdated={handleTourUpdated}
         customThemes={customThemes}
         onAddCustomTheme={handleAddCustomTheme}
       />

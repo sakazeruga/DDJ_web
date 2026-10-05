@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   X, 
   Plus, 
@@ -11,7 +11,8 @@ import {
   Image as ImageIcon,
   Wand2,
   Tag,
-  FileCheck
+  FileCheck,
+  Edit3
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { Tour, TourCategory, Language, ItineraryItem, CustomTheme } from '../types';
@@ -23,6 +24,8 @@ interface CreateTourModalProps {
   onClose: () => void;
   lang: Language;
   onTourCreated: (newTour: Tour) => void;
+  initialTour?: Tour | null;
+  onTourUpdated?: (updatedTour: Tour) => void;
   customThemes?: CustomTheme[];
   onAddCustomTheme?: (newTheme: CustomTheme) => void;
 }
@@ -32,11 +35,14 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
   onClose,
   lang,
   onTourCreated,
+  initialTour = null,
+  onTourUpdated,
   customThemes = [],
   onAddCustomTheme,
 }) => {
   if (!isOpen) return null;
   const t = translations[lang];
+  const isEditMode = Boolean(initialTour);
 
   // Form states
   const [title, setTitle] = useState('');
@@ -187,6 +193,43 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
       isDeepSpot: true,
     },
   ]);
+
+  // Load existing tour data when opening in edit mode
+  useEffect(() => {
+    if (initialTour) {
+      setTitle(initialTour.title || '');
+      setCatchphrase(initialTour.catchphrase || '');
+      setDescription(initialTour.description || '');
+      setCategory(initialTour.category || 'anime-pilgrimage');
+      setArea(initialTour.area || '');
+      setOtakuLevel(initialTour.otakuLevel || 3);
+      setDurationHours(initialTour.durationHours ?? 3.5);
+      setPrice(initialTour.price ?? 6500);
+      setMaxParticipants(initialTour.maxParticipants ?? 6);
+      setLanguagesInput(initialTour.languages ? initialTour.languages.join(', ') : '日本語, English');
+      setImageUrl(initialTour.imageUrl || '');
+      setRecommendedPrep(initialTour.recommendedPreparation || '');
+      setMustBringInput(initialTour.mustBring ? initialTour.mustBring.join(', ') : '歩きやすい靴, カメラ');
+      setMeetingPoint(initialTour.meetingPoint || '');
+      setGuideName(initialTour.guide?.name || 'ガイド');
+      setGuideBio(initialTour.guide?.bio || '');
+      setGuideYears(initialTour.guide?.otakuYears ?? 5);
+      if (initialTour.talkSessionConfig) {
+        setEnableTalkSession(Boolean(initialTour.talkSessionConfig.enabled));
+        setTalkPrice30m(initialTour.talkSessionConfig.price30m ?? 3000);
+        setTalkPrice60m(initialTour.talkSessionConfig.price60m ?? 5500);
+        setTalkTopicsInput(initialTour.talkSessionConfig.topics ? initialTour.talkSessionConfig.topics.join(', ') : '');
+      }
+      if (initialTour.itinerary && initialTour.itinerary.length > 0) {
+        setItinerary(
+          initialTour.itinerary.map((item, idx) => ({
+            ...item,
+            id: `step-edit-${idx}-${Date.now()}`,
+          }))
+        );
+      }
+    }
+  }, [initialTour, isOpen]);
 
   const addItineraryStop = () => {
     const nextHour = 10 + itinerary.length;
@@ -932,8 +975,8 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
       return;
     }
 
-    const newTour: Tour = {
-      id: `tour-custom-${Date.now()}`,
+    const tourPayload: Tour = {
+      id: initialTour ? initialTour.id : `tour-custom-${Date.now()}`,
       title,
       titleEn: title,
       catchphrase,
@@ -951,16 +994,16 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
       imageUrl,
       gallery: [imageUrl],
       guide: {
-        id: `guide-${Date.now()}`,
+        id: initialTour?.guide?.id || `guide-${Date.now()}`,
         name: guideName,
         nameEn: guideName,
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80',
-        role: 'カルチャーツアーガイド',
-        roleEn: 'Cultural Tour Specialist',
+        avatar: initialTour?.guide?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80',
+        role: initialTour?.guide?.role || 'カルチャーツアーガイド',
+        roleEn: initialTour?.guide?.roleEn || 'Cultural Tour Specialist',
         bio: guideBio,
         bioEn: guideBio,
-        rating: 5.0,
-        reviewsCount: 1,
+        rating: initialTour?.guide?.rating || 5.0,
+        reviewsCount: initialTour?.guide?.reviewsCount || 1,
         otakuYears: Number(guideYears) || 5,
         specialties: [category, area],
       },
@@ -979,10 +1022,10 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
         ...(addedNewTheme ? [addedNewTheme.name] : []),
         ...customTags,
       ])).filter(Boolean),
-      featured: false,
-      rating: 5.0,
-      reviewsCount: 0,
-      createdAt: new Date().toISOString().split('T')[0],
+      featured: initialTour?.featured || false,
+      rating: initialTour?.rating || 5.0,
+      reviewsCount: initialTour?.reviewsCount || 0,
+      createdAt: initialTour?.createdAt || new Date().toISOString().split('T')[0],
       talkSessionConfig: enableTalkSession ? {
         enabled: true,
         price30m: Number(talkPrice30m) || 3000,
@@ -992,7 +1035,11 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
       } : undefined,
     };
 
-    onTourCreated(newTour);
+    if (initialTour && onTourUpdated) {
+      onTourUpdated(tourPayload);
+    } else {
+      onTourCreated(tourPayload);
+    }
 
     confetti({
       particleCount: 100,
@@ -1010,17 +1057,19 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
         {/* Header */}
         <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-blue-600" />
+            {isEditMode ? <Edit3 className="w-5 h-5 text-indigo-600" /> : <Sparkles className="w-5 h-5 text-blue-600" />}
             <div>
               <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
-                {t.createModal.title}
+                {isEditMode ? (lang === 'ja' ? 'ツアー内容を編集する' : 'Edit Tour Details') : t.createModal.title}
               </h2>
-              <p className="text-xs text-slate-500">{t.createModal.subtitle}</p>
+              <p className="text-xs text-slate-500">
+                {isEditMode ? (lang === 'ja' ? 'タイトル、日程、工程、料金をいつでも更新できます。' : 'Update route, pricing, and itinerary anytime.') : t.createModal.subtitle}
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-200 cursor-pointer"
+            className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-200 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
@@ -1865,10 +1914,10 @@ export const CreateTourModal: React.FC<CreateTourModalProps> = ({
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-base shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-base shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 min-h-[52px]"
             >
-              <Sparkles className="w-5 h-5 text-yellow-300" />
-              <span>{t.createModal.submit}</span>
+              {isEditMode ? <Edit3 className="w-5 h-5 text-yellow-300" /> : <Sparkles className="w-5 h-5 text-yellow-300" />}
+              <span>{isEditMode ? (lang === 'ja' ? '変更を保存する' : 'Save Changes') : t.createModal.submit}</span>
             </button>
           </div>
         </form>

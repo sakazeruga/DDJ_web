@@ -93,7 +93,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value as Currency)}
-            className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 rounded-xl px-2 py-2 cursor-pointer focus:outline-none transition-colors"
+            className="min-h-[44px] bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 rounded-xl px-2.5 py-2 cursor-pointer focus:outline-none transition-colors"
             aria-label="Currency"
           >
             <option value="JPY">¥ JPY</option>
@@ -105,7 +105,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Language Switcher */}
           <button
             onClick={() => setLang(lang === 'ja' ? 'en' : 'ja')}
-            className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 hover:text-blue-600 transition-colors cursor-pointer"
+            className="min-h-[44px] flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 hover:text-blue-600 transition-colors cursor-pointer"
             title="Switch Language"
           >
             <Globe className="w-3.5 h-3.5 text-blue-600" />
@@ -115,12 +115,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Favorites Button */}
           <button
             onClick={openFavorites}
-            className="relative p-2 sm:p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-rose-500 transition-colors cursor-pointer"
+            className="w-11 h-11 relative rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-rose-500 transition-colors cursor-pointer flex items-center justify-center"
             title={t.nav.favorites}
+            aria-label="Favorites"
           >
             <Bookmark className="w-4 h-4" />
             {favoritesCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-rose-500 text-white text-[10px] sm:text-[11px] font-bold flex items-center justify-center shadow-sm">
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-500 text-white text-[11px] font-bold flex items-center justify-center shadow-sm">
                 {favoritesCount}
               </span>
             )}
@@ -129,43 +130,43 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Host a Tour CTA Button */}
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer active:scale-95 whitespace-nowrap"
+            className="min-h-[44px] flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer active:scale-95 whitespace-nowrap"
           >
             <PlusCircle className="w-4 h-4" />
             <span className="hidden sm:inline">{t.nav.hostTour}</span>
-            <span className="sm:hidden">{lang === 'ja' ? '投稿' : 'Host'}</span>
+            <span className="sm:hidden">{lang === 'ja' ? '企画・投稿' : 'Host'}</span>
           </button>
         </div>
       </div>
 
-      {/* Mobile Sub Navigation */}
-      <div className="flex md:hidden border-t border-slate-200 bg-white px-4 py-2 justify-around">
+      {/* Mobile Sub Navigation (Touch-optimized 44px buttons) */}
+      <div className="flex md:hidden border-t border-slate-200 bg-white px-2 py-1.5 gap-1.5 justify-around shadow-inner">
         <button
           onClick={() => setCurrentTab('explore')}
-          className={`flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg font-bold ${
-            currentTab === 'explore' ? 'text-blue-600 bg-blue-50' : 'text-slate-600'
+          className={`flex-1 min-h-[44px] flex items-center justify-center gap-1.5 text-xs px-2 rounded-xl font-bold transition-all active:scale-95 cursor-pointer ${
+            currentTab === 'explore' ? 'text-blue-700 bg-blue-50 border border-blue-200/60 shadow-xs' : 'text-slate-600 hover:bg-slate-50'
           }`}
         >
-          <Compass className="w-3.5 h-3.5" />
-          {t.nav.explore}
+          <Compass className="w-4 h-4 text-blue-600" />
+          <span>{t.nav.explore}</span>
         </button>
         <button
           onClick={() => setCurrentTab('requests')}
-          className={`flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg font-bold ${
-            currentTab === 'requests' ? 'text-blue-600 bg-blue-50' : 'text-slate-600'
+          className={`flex-1 min-h-[44px] flex items-center justify-center gap-1.5 text-xs px-2 rounded-xl font-bold transition-all active:scale-95 cursor-pointer ${
+            currentTab === 'requests' ? 'text-blue-700 bg-blue-50 border border-blue-200/60 shadow-xs' : 'text-slate-600 hover:bg-slate-50'
           }`}
         >
-          <MessageSquare className="w-3.5 h-3.5" />
-          {t.nav.requests}
+          <MessageSquare className="w-4 h-4 text-blue-600" />
+          <span>{t.nav.requests}</span>
         </button>
         <button
           onClick={() => setCurrentTab('mypage')}
-          className={`flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg font-bold ${
-            currentTab === 'mypage' ? 'text-blue-600 bg-blue-50' : 'text-slate-600'
+          className={`flex-1 min-h-[44px] flex items-center justify-center gap-1.5 text-xs px-2 rounded-xl font-bold transition-all active:scale-95 cursor-pointer ${
+            currentTab === 'mypage' ? 'text-blue-700 bg-blue-50 border border-blue-200/60 shadow-xs' : 'text-slate-600 hover:bg-slate-50'
           }`}
         >
-          <Bookmark className="w-3.5 h-3.5" />
-          {t.nav.myPage}
+          <Bookmark className="w-4 h-4 text-blue-600" />
+          <span>{t.nav.myPage}</span>
         </button>
       </div>
     </header>

@@ -260,45 +260,46 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
             {/* Guide Consultation CTA */}
             <button
               onClick={() => setIsGuideChatOpen(true)}
-              className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition-colors cursor-pointer"
+              className="min-h-[44px] flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition-colors cursor-pointer active:scale-95"
               title="ガイドに事前質問・相談"
             >
-              <MessageSquare className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+              <MessageSquare className="w-4 h-4 text-blue-600 flex-shrink-0" />
               <span className="hidden sm:inline">{lang === 'ja' ? 'ガイドに質問' : 'Ask Guide'}</span>
-              <span className="sm:hidden text-[11px]">{lang === 'ja' ? '質問' : 'Ask'}</span>
+              <span className="sm:hidden text-xs">{lang === 'ja' ? '質問' : 'Ask'}</span>
             </button>
 
             {/* Share CTA */}
             <button
               onClick={() => setIsShareModalOpen(true)}
-              className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="min-h-[44px] flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
               title="ツアーをシェア"
             >
-              <Share className="w-3.5 h-3.5 flex-shrink-0" />
+              <Share className="w-4 h-4 flex-shrink-0" />
               <span>シェア</span>
             </button>
 
-            {/* Favorite CTA */}
+            {/* Favorite CTA (44px touch target) */}
             <button
               onClick={(e) => onToggleFavorite(tour.id, e)}
-              className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center p-0 rounded-xl border transition-all cursor-pointer flex-shrink-0 ${
+              className={`w-11 h-11 flex items-center justify-center rounded-xl border transition-all cursor-pointer flex-shrink-0 active:scale-95 ${
                 isFavorite
                   ? 'bg-rose-500 text-white border-rose-500 shadow-sm'
                   : 'bg-slate-50 text-slate-700 border-slate-200 hover:text-rose-600'
               }`}
               title="お気に入り"
+              aria-label="Save to favorites"
             >
-              <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isFavorite ? 'fill-current' : ''}`} />
+              <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
             </button>
 
-            {/* Compact Close Button */}
+            {/* Close Button (44px touch target) */}
             <button
               onClick={onClose}
-              className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center p-0 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 transition-colors cursor-pointer flex-shrink-0"
+              className="w-11 h-11 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 transition-colors cursor-pointer flex-shrink-0 active:scale-95"
               title="閉じる"
               aria-label="Close modal"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -385,11 +386,11 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left 2 Columns: Tabs & Content */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Navigation Tabs (Text-reduction & Visual organization) */}
-              <div className="flex items-center gap-1.5 p-1.5 bg-white rounded-2xl border border-slate-200 shadow-xs overflow-x-auto">
+              {/* Navigation Tabs (Text-reduction & Visual organization, min-h-[44px] touch targets) */}
+              <div className="flex items-center gap-1.5 p-1.5 bg-white rounded-2xl border border-slate-200 shadow-xs overflow-x-auto scrollbar-none">
                 <button
                   onClick={() => setActiveTab('itinerary')}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  className={`min-h-[44px] flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
                     activeTab === 'itinerary'
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -401,7 +402,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
 
                 <button
                   onClick={() => setActiveTab('map')}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap relative ${
+                  className={`min-h-[44px] flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap relative active:scale-95 ${
                     activeTab === 'map'
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -414,7 +415,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
 
                 <button
                   onClick={() => setActiveTab('guide')}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  className={`min-h-[44px] flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
                     activeTab === 'guide'
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -426,7 +427,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
 
                 <button
                   onClick={() => setActiveTab('reviews')}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  className={`min-h-[44px] flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
                     activeTab === 'reviews'
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -1101,7 +1102,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                           <button
                             type="button"
                             onClick={() => setGuestsCount(Math.max(1, guestsCount - 1))}
-                            className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center cursor-pointer shadow-xs"
+                            className="w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center cursor-pointer shadow-xs active:scale-95"
                           >
                             -
                           </button>
@@ -1111,7 +1112,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                           <button
                             type="button"
                             onClick={() => setGuestsCount(Math.min(tour.maxParticipants, guestsCount + 1))}
-                            className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center cursor-pointer shadow-xs"
+                            className="w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center cursor-pointer shadow-xs active:scale-95"
                           >
                             +
                           </button>

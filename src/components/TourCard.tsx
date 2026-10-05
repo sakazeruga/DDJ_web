@@ -106,17 +106,17 @@ export const TourCard: React.FC<TourCardProps> = ({
           </span>
         </div>
 
-        {/* Favorite Button */}
+        {/* Favorite Button (44px touch target) */}
         <button
           onClick={(e) => onToggleFavorite(tour.id, e)}
-          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all ${
+          className={`absolute top-2.5 right-2.5 w-11 h-11 rounded-full backdrop-blur-md transition-all flex items-center justify-center cursor-pointer z-10 ${
             isFavorite 
-              ? 'bg-rose-500 text-white shadow-md scale-110' 
-              : 'bg-white/85 text-slate-700 hover:text-rose-500 hover:bg-white'
+              ? 'bg-rose-500 text-white shadow-md scale-105' 
+              : 'bg-white/90 text-slate-700 hover:text-rose-500 hover:bg-white shadow-sm active:scale-95'
           }`}
           aria-label="Save to favorites"
         >
-          <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+          <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
         </button>
 
         {/* Area & Duration Pill */}
@@ -203,10 +203,10 @@ export const TourCard: React.FC<TourCardProps> = ({
             </div>
           </div>
 
-          {/* Action Button CTA */}
-          <div className="w-full py-2 px-3 rounded-xl bg-slate-50 group-hover:bg-blue-600 text-slate-700 group-hover:text-white flex items-center justify-between transition-all text-xs font-bold">
+          {/* Action Button CTA (min 44px touch target) */}
+          <div className="w-full min-h-[44px] px-3.5 rounded-xl bg-slate-50 group-hover:bg-blue-600 text-slate-700 group-hover:text-white flex items-center justify-between transition-all text-xs font-bold shadow-2xs">
             <span>{t.tourCard.viewDetails}</span>
-            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
       </div>
