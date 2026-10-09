@@ -10,6 +10,8 @@ import { RequestBoardView } from './components/RequestBoardView';
 import { MyPageView } from './components/MyPageView';
 import { FeaturesSection } from './components/FeaturesSection';
 import { TourShioriSection } from './components/TourShioriSection';
+import { TourAntennaSection } from './components/TourAntennaSection';
+import { NewsletterSection } from './components/NewsletterSection';
 import { Footer } from './components/Footer';
 import { InteractiveMapView } from './components/InteractiveMapView';
 import { Flame, LayoutGrid, List, MapPin } from 'lucide-react';
@@ -23,9 +25,11 @@ import type {
   Language, 
   Currency,
   TourCategory,
-  CustomTheme
+  CustomTheme,
+  CuratedAntennaTour
 } from './types';
 import { INITIAL_TOURS, INITIAL_REQUESTS, INITIAL_REVIEWS } from './data/mockTours';
+import { INITIAL_ANTENNA_TOURS } from './data/mockAntennaTours';
 import { translations } from './i18n/translations';
 import { formatPrice } from './utils/currency';
 
@@ -259,6 +263,67 @@ export function App() {
       if (prev.some((t) => t.categoryKey === newTheme.categoryKey)) return prev;
       return [newTheme, ...prev];
     });
+  };
+
+  // Curated Antenna Tours state (curated external tours synced with LocalStorage)
+  const [antennaTours, setAntennaTours] = useState<CuratedAntennaTour[]>(() => {
+    const saved = localStorage.getItem('ddj_antenna_tours_v1');
+    if (saved) {
+      try {
+        const parsed: CuratedAntennaTour[] = JSON.parse(saved);
+        const existingIds = new Set(parsed.map((a) => a.id));
+        const missing = INITIAL_ANTENNA_TOURS.filter((a) => !existingIds.has(a.id));
+        if (missing.length > 0) {
+          return [...missing, ...parsed];
+        }
+        return parsed;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return INITIAL_ANTENNA_TOURS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('ddj_antenna_tours_v1', JSON.stringify(antennaTours));
+  }, [antennaTours]);
+
+  const handleSuggestAntennaTour = (suggestion: { title: string; url: string; reason: string; email?: string }) => {
+    const newAntennaTour: CuratedAntennaTour = {
+      id: `antenna-user-${Date.now()}`,
+      title: suggestion.title,
+      titleEn: suggestion.title,
+      organizer: suggestion.email ? `ユーザー推薦 (${suggestion.email.split('@')[0]})` : 'コミュニティ推薦',
+      sourcePlatform: suggestion.url.toLowerCase().includes('peatix') ? 'Peatix' : suggestion.url.toLowerCase().includes('note') ? 'note' : 'その他',
+      sourceUrl: suggestion.url,
+      date: '近日開催 / 随時受付',
+      area: '日本各地 / オンライン',
+      category: 'oshikatsu-subculture',
+      otakuLevel: 4,
+      priceText: '外部参照',
+      imageUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80',
+      screeningReason: suggestion.reason,
+      screeningScore: 96,
+      tags: ['ユーザー推薦', 'タレコミ発掘'],
+      isGlobisRecommended: false,
+      createdAt: new Date().toISOString().split('T')[0],
+    };
+    setAntennaTours((prev) => [newAntennaTour, ...prev]);
+  };
+
+  const handleNewsletterSubscribe = (email: string, isGlobis: boolean) => {
+    try {
+      const currentSubs = JSON.parse(localStorage.getItem('ddj_newsletter_subscribers') || '[]');
+      const subscriber = {
+        id: `sub-${Date.now()}`,
+        email,
+        subscribedAt: new Date().toISOString(),
+        isGlobisMember: isGlobis,
+      };
+      localStorage.setItem('ddj_newsletter_subscribers', JSON.stringify([...currentSubs, subscriber]));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   // Modal states & URL deep-linking (?tour={tourId})
@@ -539,6 +604,13 @@ export function App() {
     }
   };
 
+  const scrollToAntenna = () => {
+    const el = document.getElementById('antenna-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const t = translations[lang];
 
   // View Mode: 'grid' | 'catalog' | 'map'
@@ -567,6 +639,7 @@ export function App() {
         openFavorites={() => {
           setCurrentTab('mypage');
         }}
+        onScrollToAntenna={scrollToAntenna}
       />
 
       {/* Main Content Area */}
@@ -767,6 +840,20 @@ export function App() {
 
             {/* Tour Itinerary Shiori Section */}
             <TourShioriSection lang={lang} />
+
+            {/* Curated External Tour Antenna Radar (ディープオタクツアー情報アンテナハブ) */}
+            <TourAntennaSection
+              lang={lang}
+              antennaTours={antennaTours}
+              onSuggestTour={handleSuggestAntennaTour}
+            />
+
+            {/* Weekly Newsletter Section (週刊DDJ偏愛アンテナ通信) */}
+            <NewsletterSection
+              lang={lang}
+              latestTours={tours}
+              onSubscribe={handleNewsletterSubscribe}
+            />
 
             {/* Features & Why Us */}
             <FeaturesSection

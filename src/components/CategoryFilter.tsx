@@ -7,7 +7,8 @@ import {
   BookOpen, 
   Ghost, 
   HeartHandshake,
-  Music
+  Music,
+  GraduationCap
 } from 'lucide-react';
 import type { Language, TourCategory, CustomTheme } from '../types';
 import { translations } from '../i18n/translations';
@@ -33,6 +34,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
     { id: 'history-castle', label: t.categories['history-castle'], icon: <Shield className="w-4 h-4" />, color: 'hover:border-amber-500' },
     { id: 'railway-train', label: t.categories['railway-train'], icon: <Train className="w-4 h-4" />, color: 'hover:border-emerald-500' },
     { id: 'anime-pilgrimage', label: t.categories['anime-pilgrimage'], icon: <MapPin className="w-4 h-4" />, color: 'hover:border-rose-500' },
+    { id: 'business-fieldwork', label: t.categories['business-fieldwork'], icon: <GraduationCap className="w-4 h-4" />, color: 'hover:border-teal-500' },
     { id: 'retro-showa', label: t.categories['retro-showa'], icon: <BookOpen className="w-4 h-4" />, color: 'hover:border-orange-500' },
     { id: 'folklore-yokai', label: t.categories['folklore-yokai'], icon: <Ghost className="w-4 h-4" />, color: 'hover:border-purple-500' },
     { id: 'oshikatsu-subculture', label: t.categories['oshikatsu-subculture'], icon: <HeartHandshake className="w-4 h-4" />, color: 'hover:border-pink-500' },

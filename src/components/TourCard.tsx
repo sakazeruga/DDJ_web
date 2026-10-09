@@ -8,7 +8,8 @@ import {
   Languages,
   ChevronRight,
   Ticket,
-  Compass
+  Compass,
+  GraduationCap
 } from 'lucide-react';
 import type { Tour, Language, Currency } from '../types';
 import { translations } from '../i18n/translations';
@@ -98,12 +99,18 @@ export const TourCard: React.FC<TourCardProps> = ({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
 
-        {/* Level Badge */}
-        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+        {/* Level & Globis Badge */}
+        <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
           <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border shadow-xs flex items-center gap-1 ${levelBadge.bg}`}>
             <Flame className="w-3 h-3 fill-current" />
             <span>{levelBadge.label}</span>
           </span>
+          {tour.isGlobisProject && (
+            <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-600 text-white shadow-xs flex items-center gap-1">
+              <GraduationCap className="w-3 h-3" />
+              <span>Globis生企画</span>
+            </span>
+          )}
         </div>
 
         {/* Favorite Button (44px touch target) */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Compass, MessageSquare, PlusCircle, Bookmark, Globe, Sparkles } from 'lucide-react';
+import { Compass, MessageSquare, PlusCircle, Bookmark, Globe, Sparkles, Radio } from 'lucide-react';
 import type { Language, Currency } from '../types';
 import { translations } from '../i18n/translations';
 
@@ -13,6 +13,7 @@ interface NavbarProps {
   setCurrency: (currency: Currency) => void;
   favoritesCount: number;
   openFavorites: () => void;
+  onScrollToAntenna?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -25,6 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setCurrency,
   favoritesCount,
   openFavorites,
+  onScrollToAntenna,
 }) => {
   const t = translations[lang];
 
@@ -60,6 +62,22 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Compass className="w-4 h-4" />
             {t.nav.explore}
+          </button>
+
+          <button
+            onClick={() => {
+              if (currentTab !== 'explore') {
+                setCurrentTab('explore');
+                setTimeout(() => onScrollToAntenna?.(), 100);
+              } else {
+                onScrollToAntenna?.();
+              }
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs sm:text-sm font-bold text-slate-600 hover:text-rose-600 hover:bg-white/60 transition-all cursor-pointer"
+            title="外部オタクツアー情報アンテナ"
+          >
+            <Radio className="w-4 h-4 text-rose-500" />
+            <span>{lang === 'ja' ? 'アンテナ' : 'Radar'}</span>
           </button>
 
           <button
@@ -150,6 +168,21 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <Compass className="w-4 h-4 text-blue-600" />
           <span>{t.nav.explore}</span>
+        </button>
+        <button
+          onClick={() => {
+            if (currentTab !== 'explore') {
+              setCurrentTab('explore');
+              setTimeout(() => onScrollToAntenna?.(), 100);
+            } else {
+              onScrollToAntenna?.();
+            }
+          }}
+          className="flex-1 min-h-[44px] flex items-center justify-center gap-1 text-[11px] px-1 rounded-xl font-bold transition-all active:scale-95 cursor-pointer text-slate-600 hover:bg-slate-50"
+          title="外部アンテナ"
+        >
+          <Radio className="w-4 h-4 text-rose-500" />
+          <span>{lang === 'ja' ? 'アンテナ' : 'Radar'}</span>
         </button>
         <button
           onClick={() => setCurrentTab('requests')}

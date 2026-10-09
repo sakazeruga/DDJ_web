@@ -6,6 +6,7 @@ export type BuiltinTourCategory =
   | 'folklore-yokai'        // 妖怪・神話・民俗伝承
   | 'oshikatsu-subculture'  // 推し活・アイドル・サブカル
   | 'music-sound'           // 音楽・音風景・フィールドレコーディング（MOTTAINAI SOUND）
+  | 'business-fieldwork'    // 🎓 ビジネス×偏愛・フィールドワーク（Globis/MBA・社会科見学・地方創生）
   | 'custom';               // 特注・カスタム
 
 export type TourCategory = BuiltinTourCategory | (string & {});
@@ -112,6 +113,39 @@ export interface Tour {
   createdAt: string;
   talkSessionConfig?: TalkSessionConfig;
   routeWaypoints?: string[];
+  isGlobisProject?: boolean; // Globis生・MBA実践者企画
+  globisDetails?: {
+    batchOrAffiliation?: string; // e.g. "東京校 2024期" or "卒業生アルムナイ"
+    businessTheme?: string;      // e.g. "地方創生・事業承継ビジネスモデル探訪"
+    networkingSession?: boolean; // 懇親・ディスカッション枠付き
+  };
+}
+
+export interface CuratedAntennaTour {
+  id: string;
+  title: string;
+  titleEn: string;
+  organizer: string;
+  sourcePlatform: 'Peatix' | 'note' | '有志団体' | '地域公式' | '大学・学会' | 'その他';
+  sourceUrl: string;
+  date: string;
+  area: string;
+  category: TourCategory;
+  otakuLevel: 1 | 2 | 3 | 4 | 5;
+  priceText: string; // e.g. "¥3,500" or "無料" or "実費のみ"
+  imageUrl: string;
+  screeningReason: string; // DDJ偏愛スクリーニング厳選理由
+  screeningScore: number;  // 90〜99点
+  tags: string[];
+  isGlobisRecommended?: boolean; // Globis生・社会人探訪おすすめ
+  createdAt: string;
+}
+
+export interface NewsletterSubscriber {
+  email: string;
+  subscribedAt: string;
+  categoriesOfInterest?: string[];
+  isGlobisMember?: boolean;
 }
 
 export interface TalkSessionConfig {

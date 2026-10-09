@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { 
   X, 
   ArrowLeft,
+  GraduationCap,
   Clock, 
   MapPin, 
   Star, 
@@ -357,7 +358,7 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
 
           {/* Clean Title & Catchphrase Card (100% visible, never buried) */}
           <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xs space-y-2">
-            <div className="flex items-center gap-2 text-xs font-bold text-blue-700">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-blue-700">
               <span className="px-2 py-0.5 rounded-md bg-blue-50 border border-blue-200 font-mono text-[11px]">
                 DDJ-TOUR #{tour.id.replace('tour-', '').toUpperCase()}
               </span>
@@ -366,7 +367,33 @@ export const TourDetailModal: React.FC<TourDetailModalProps> = ({
                 <MapPin className="w-3.5 h-3.5 text-rose-500" />
                 {lang === 'ja' ? tour.area : tour.areaEn}
               </span>
+              {tour.isGlobisProject && (
+                <span className="px-2.5 py-0.5 rounded-full bg-indigo-600 text-white text-[11px] font-bold flex items-center gap-1 shadow-2xs">
+                  <GraduationCap className="w-3.5 h-3.5" />
+                  <span>Globis生・MBA実践者企画</span>
+                </span>
+              )}
             </div>
+
+            {/* Globis Fieldwork Info Card */}
+            {tour.isGlobisProject && tour.globisDetails && (
+              <div className="p-3 rounded-2xl bg-indigo-50/70 border border-indigo-200/80 text-xs text-indigo-950 space-y-1 my-1">
+                <div className="font-bold flex items-center gap-1.5 text-indigo-900">
+                  <GraduationCap className="w-4 h-4 text-indigo-600" />
+                  <span>{tour.globisDetails.batchOrAffiliation || 'グロービス経営大学院有志'} 企画ツアー</span>
+                </div>
+                {tour.globisDetails.businessTheme && (
+                  <div className="text-[11px] text-slate-700">
+                    <span className="font-bold text-indigo-800">研究・事業テーマ:</span> {tour.globisDetails.businessTheme}
+                  </div>
+                )}
+                {tour.globisDetails.networkingSession && (
+                  <div className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded inline-block">
+                    ✓ ツアー終盤に懇親・ディスカッションセッション（参加者ネットワーキング）付き
+                  </div>
+                )}
+              </div>
+            )}
 
             <h2 className="text-base sm:text-2xl md:text-3xl font-black text-slate-900 leading-snug">
               {lang === 'ja' ? tour.title : tour.titleEn}
